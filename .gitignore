@@ -1,0 +1,19 @@
+cat > .gitignore << EOF
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.log
+
+# Node
+node_modules/
+dist/
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Docker data
+storage/
+EOF
