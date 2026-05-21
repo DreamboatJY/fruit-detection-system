@@ -21,5 +21,6 @@ datasets/
 runs/
 *.pt
 
-# 训练脚本（仅组长使用）
+# 训练脚本和数据清洗脚本（仅组长使用）
 train.py
+clean_dataset.py
