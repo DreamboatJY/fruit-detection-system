@@ -11,7 +11,7 @@ ensure_directories()
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="遥感目标检测平台后端API"
+    description="果蔬检测平台后端API"
 )
 
 # CORS配置

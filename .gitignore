@@ -1,4 +1,3 @@
-cat > .gitignore << EOF
 # Python
 __pycache__/
 *.pyc
@@ -14,6 +13,13 @@ dist/
 .vscode/
 .idea/
 
-# Docker data
+# Docker 数据
 storage/
-EOF
+
+# 数据集和训练输出
+datasets/
+runs/
+*.pt
+
+# 训练脚本（仅组长使用）
+train.py

@@ -5,7 +5,7 @@ class Settings(BaseModel):
     """应用配置类"""
     
     # 应用基本信息
-    app_name: str = os.getenv("APP_NAME", "RSOD Detection Platform")
+    app_name: str = os.getenv("APP_NAME", "Fruit and Vegetable Detection System")
     app_version: str = os.getenv("APP_VERSION", "1.0.0")
     debug: bool = os.getenv("DEBUG", "true").lower() in ("true", "1", "yes")
     
