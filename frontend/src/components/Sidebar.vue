@@ -35,6 +35,7 @@ import {
   ChatDotRound,
   DataLine,
   User,
+  VideoCamera,
 } from "@element-plus/icons-vue";
 
 const router = useRouter();

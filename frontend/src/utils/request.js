@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus'
 
 const service = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
-    timeout: 30000
+    timeout: 300000  // 5分钟超时，用于视频检测
 })
 
 // 请求拦截器
@@ -22,7 +22,7 @@ service.interceptors.response.use(
         return response.data
     },
     error => {
-        ElMessage.error('请求失败：' + (error.response?.data?.message || '服务器错误'))
+        ElMessage.error('请求失败：' + (error.response?.data?.detail || error.response?.data?.message || '服务器错误'))
         return Promise.reject(error)
     }
 )
