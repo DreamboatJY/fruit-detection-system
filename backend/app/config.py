@@ -38,7 +38,7 @@ class Settings(BaseModel):
     minio_secure: bool = os.getenv("MINIO_SECURE", "false").lower() in ("true", "1", "yes")
     
     # YOLO模型配置
-    YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "yolo11n.pt")
+    YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "neu_model.pt")
     CONFIDENCE_THRESHOLD: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
     IOU_THRESHOLD: float = float(os.getenv("IOU_THRESHOLD", "0.45"))
     

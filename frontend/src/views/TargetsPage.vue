@@ -65,35 +65,18 @@ const selectedTarget = ref(null);
 
 const categories = ref([
   {
-    name: "交通工具",
-    icon: "Plane",
-    color: "#3b82f6",
-    items: [
-      { name: "飞机", category: "交通工具", description: "各类民用和军用飞机", accuracy: "98.5%" },
-      { name: "船舶", category: "交通工具", description: "货轮、客轮、军舰等", accuracy: "97.2%" },
-      { name: "汽车", category: "交通工具", description: "各类乘用车、商用车", accuracy: "96.8%" },
-    ],
-  },
-  {
-    name: "建筑设施",
-    icon: "OfficeBuilding",
-    color: "#10b981",
-    items: [
-      { name: "油罐", category: "建筑设施", description: "储油罐、储气罐", accuracy: "99.1%" },
-      { name: "立交桥", category: "建筑设施", description: "城市互通立交桥", accuracy: "97.8%" },
-      { name: "体育场", category: "建筑设施", description: "各类体育场馆", accuracy: "96.4%" },
-    ],
-  },
-  {
-    name: "自然地物",
-    icon: "Sunrise",
+    name: "表面缺陷",
+    icon: "Setting",
     color: "#f59e0b",
     items: [
-      { name: "湖泊", category: "自然地物", description: "天然或人工湖泊", accuracy: "99.5%" },
-      { name: "河流", category: "自然地物", description: "江河溪流", accuracy: "98.9%" },
-      { name: "森林", category: "自然地物", description: "成片树林", accuracy: "97.6%" },
-    ],
-  },
+      { name: "裂纹", category: "crazing", description: "表面开裂缺陷", accuracy: "78%" },
+      { name: "划痕", category: "inclusion", description: "线性刮伤缺陷", accuracy: "89%" },
+      { name: "斑块", category: "patches", description: "块状瑕疵缺陷", accuracy: "93%" },
+      { name: "麻点", category: "pitted_surface", description: "密集小坑缺陷", accuracy: "75%" },
+      { name: "压入", category: "rolled-in_scale", description: "氧化皮压入缺陷", accuracy: "72%" },
+      { name: "氧化皮", category: "scratches", description: "氧化层剥落缺陷", accuracy: "97%" }
+    ]
+  }
 ]);
 
 const filteredCategories = computed(() => {
