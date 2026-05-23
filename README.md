@@ -163,7 +163,7 @@ git push origin feature/添加检测历史-张三
 
 
 
-#### 任务完成后（下午 17:30 前）
+#### 任务完成后（下午 17:00 前）
 
 1. **在 GitHub 网页上发起 Pull Request (PR)**
 
@@ -203,14 +203,14 @@ git push origin feature/添加检测历史-张三
 
 ### 后端环境（Python）
 
-组长使用 conda 环境 `PyTorchDL`（已安装 torch 和 ultralytics），组员使用虚拟环境 `.venv`。
+组长使用 conda 环境 `你的conda环境名`（已安装 torch 和 ultralytics），组员使用虚拟环境 `.venv`。
 
 #### 组长（使用已有 conda 环境）
 
 bash
 
 ```
-conda activate PyTorchDL
+conda activate 组长的conda环境名
 pip install -r backend/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
@@ -257,7 +257,7 @@ docker-compose ps      # 查看状态
 
 ### 下载 NEU-DET 数据集
 
-从官方下载：https://github.com/khushiag/NEU-DET （Download ZIP）
+从官方下载（发布者主页）
 
 解压到 `datasets/NEU-DET/`，目录结构应为：
 
@@ -273,13 +273,13 @@ datasets/NEU-DET/
 
 ### 转换为 YOLO 格式
 
-运行脚本 `convert_neu_to_yolo.py`（项目根目录下已提供）：
+运行脚本 `convert.py`（组长本地，未上传仓库）：
 
 bash
 
 ```
 conda activate PyTorchDL
-python convert_neu_to_yolo.py
+python convert.py
 ```
 
 
@@ -296,7 +296,7 @@ python train.py
 
 
 
-训练参数已在 `train.py` 中配置（100 轮，batch=16，混合精度）。完成后最佳模型保存在 `neu_detector/exp/weights/best.pt`。
+训练参数已在 `train.py`（组长本地，未上传仓库）中配置（100 轮，batch=16，混合精度）。完成后最佳模型保存在 `neu_detector/exp/weights/best.pt`。
 训练支持断点续训：如果中途中断，再次运行 `python train.py` 会自动从上次中断处继续。
 
 ------
@@ -310,7 +310,7 @@ bash
 ```
 cd backend
 # 激活环境（conda 或 .venv）
-conda activate PyTorchDL    # 或 .venv\Scripts\activate
+conda activate 你的conda环境名    # 或 .venv\Scripts\activate
 python main.py
 ```
 
