@@ -5,8 +5,8 @@
         <Monitor style="color: white; font-size: 20px" />
       </div>
       <div class="logo-text">
-        <div class="logo-title">水果检测系统</div>
-        <div class="logo-subtitle">精准识别·产量预估</div>
+        <div class="logo-title">钢铁缺陷检测系统</div>
+        <div class="logo-subtitle">工业质检 · 精准识别</div>
       </div>
     </div>
 
@@ -35,6 +35,7 @@ import {
   ChatDotRound,
   DataLine,
   User,
+  VideoCamera,
 } from "@element-plus/icons-vue";
 
 const router = useRouter();

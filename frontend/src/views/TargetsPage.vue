@@ -1,8 +1,8 @@
 <template>
   <div class="targets-page">
     <div class="page-header">
-      <h1 class="page-title">目标库</h1>
-      <p class="page-subtitle">平台支持检测的所有目标类别</p>
+      <h1 class="page-title">缺陷目标库</h1>
+      <p class="page-subtitle">平台支持检测的缺陷类型</p>
     </div>
 
     <div class="search-bar">

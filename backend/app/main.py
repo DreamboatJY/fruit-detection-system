@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from app.api import detection
+from app.api import websocket
+from app.config import settings
 
 # 创建 FastAPI 应用实例
 app = FastAPI(
-    title="遥感目标智能检测平台",
-    description="基于YOLO的遥感图像目标检测系统API，支持飞机、油罐、立交桥、操场等目标检测",
+    title="钢铁缺陷检测系统",
+    description="基于 YOLOv11 的钢材表面缺陷检测平台",
     version="1.0.0"
 )
 
@@ -16,6 +20,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 注册路由
+app.include_router(detection.router)
+app.include_router(websocket.router)
+
+# 挂载静态文件目录
+app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 
 # 健康检查接口
 @app.get("/health", tags=["健康检查"])

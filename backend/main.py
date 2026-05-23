@@ -11,7 +11,7 @@ ensure_directories()
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="果蔬检测平台后端API"
+    description="基于 YOLOv11 的钢材表面缺陷检测平台"
 )
 
 # CORS配置
