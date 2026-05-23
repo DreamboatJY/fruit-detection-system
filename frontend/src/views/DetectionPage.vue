@@ -170,6 +170,7 @@
               <p v-if="!detectionResult">等待检测...</p>
               <p v-else>
                 检测到 {{ detectionResult.total_objects }} 个目标，耗时 {{ detectionResult.detection_time }} 秒。
+                请及时关注产品质量。
               </p>
             </div>
           </div>

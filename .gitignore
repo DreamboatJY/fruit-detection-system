@@ -16,6 +16,10 @@ dist/
 # Docker 数据
 storage/
 
+# 静态上传和结果目录
+backend/static/uploads/
+backend/static/results/
+
 # 数据集和训练输出
 datasets/
 runs/

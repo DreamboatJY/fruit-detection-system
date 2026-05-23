@@ -6,7 +6,7 @@ from app.utils.file_utils import save_upload_file, ensure_directories
 from app.config import settings
 from app.models.schemas import SingleDetectionResponse, TargetListResponse, TargetItem
 
-router = APIRouter(prefix="/api/detection", tags=["detection"])
+router = APIRouter(prefix="/detection", tags=["detection"])
 
 # 确保目录存在
 ensure_directories()
@@ -39,10 +39,12 @@ async def detect_single_image(
 async def get_target_list():
     """获取目标列表"""
     targets = [
-        TargetItem(id=0, name="airplane", chinese_name="飞机", description="固定翼飞机、直升机等"),
-        TargetItem(id=4, name="ship", chinese_name="船舶", description="各类船舶"),
-        TargetItem(id=5, name="bus", chinese_name="公交车", description="城市公交车"),
-        TargetItem(id=7, name="truck", chinese_name="卡车", description="大型货运卡车"),
+        TargetItem(id=0, name="crazing", chinese_name="裂纹", description="表面开裂缺陷"),
+        TargetItem(id=1, name="inclusion", chinese_name="划痕", description="线性刮伤缺陷"),
+        TargetItem(id=2, name="patches", chinese_name="斑块", description="块状瑕疵缺陷"),
+        TargetItem(id=3, name="pitted_surface", chinese_name="麻点", description="密集小坑缺陷"),
+        TargetItem(id=4, name="rolled-in_scale", chinese_name="压入", description="氧化皮压入缺陷"),
+        TargetItem(id=5, name="scratches", chinese_name="氧化皮", description="氧化层剥落缺陷"),
     ]
     return TargetListResponse(
         success=True,

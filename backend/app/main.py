@@ -33,14 +33,14 @@ app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 async def health_check():
     return {
         "status": "healthy",
-        "service": "rsod-web-platform",
+        "service": "steel-defect-detection",
         "version": "1.0.0"
     }
 
 # 根路径接口
 @app.get("/", tags=["根路径"])
 async def root():
-    return {"message": "欢迎使用遥感目标智能检测平台"}
+    return {"message": "欢迎使用钢铁缺陷检测系统"}
 
 # 应用启动入口
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ const messagesContainer = ref(null);
 const messages = ref([
   {
     role: "assistant",
-    content: "你好！我是遥感目标检测AI助手。我可以帮你解答关于飞机、油罐、操场、立交桥、船舶等遥感目标检测的相关问题。",
+    content: "你好！我是钢铁缺陷检测AI助手。我可以帮你解答关于裂纹、划痕、斑块、麻点、压入、氧化皮等六类缺陷检测的相关问题，也可以为你提供检测结果的详细分析。",
   },
 ]);
 

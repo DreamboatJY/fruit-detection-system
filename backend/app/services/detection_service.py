@@ -33,11 +33,13 @@ class DetectionService:
     def _init_class_names(self):
         """初始化类别名称"""
         self.class_names = {
-            0: "person", 1: "bicycle", 2: "car", 3: "motorcycle",
-            4: "airplane", 5: "bus", 6: "train", 7: "truck",
-            8: "boat", 9: "traffic light", 10: "fire hydrant",
+            0: "crazing",
+            1: "inclusion",
+            2: "patches",
+            3: "pitted_surface",
+            4: "rolled-in_scale",
+            5: "scratches"
         }
-
     def detect_single_image(self, image_path: str, model_name: str = "pest-v1") -> DetectionResult:
         """执行单图检测"""
         start_time = time.time()

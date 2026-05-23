@@ -6,7 +6,7 @@
           <el-icon :size="40" color="#27ae60"><UserFilled /></el-icon>
         </div>
         <h1 class="register-title">创建账号</h1>
-        <p class="register-subtitle">加入我们，开始智能检测之旅</p>
+        <p class="register-subtitle">加入钢铁缺陷检测系统</p>
       </div>
 
       <el-form

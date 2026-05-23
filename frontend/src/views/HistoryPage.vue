@@ -42,17 +42,17 @@ const router = useRouter();
 const historyList = ref([
   {
     id: 1,
-    name: "机场航拍图",
+    name: "钢材表面裂纹",
     image: "https://picsum.photos/200/150?random=1",
-    time: "2024-01-15 14:30",
-    targets: ["飞机", "油罐"],
+    time: "2025-01-15 14:30",
+    targets: ["裂纹", "划痕"],
   },
   {
     id: 2,
-    name: "港口卫星图",
+    name: "钢板斑块缺陷",
     image: "https://picsum.photos/200/150?random=2",
-    time: "2024-01-14 10:20",
-    targets: ["船舶", "集装箱"],
+    time: "2025-01-14 10:20",
+    targets: ["斑块", "麻点"],
   },
 ]);
 

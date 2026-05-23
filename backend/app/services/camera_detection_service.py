@@ -33,9 +33,12 @@ class CameraDetectionService:
     def _init_class_names(self):
         """初始化类别名称"""
         self.class_names = {
-            0: "person", 1: "bicycle", 2: "car", 3: "motorcycle",
-            4: "airplane", 5: "bus", 6: "train", 7: "truck",
-            8: "boat", 9: "traffic light", 10: "fire hydrant",
+            0: "crazing",
+            1: "inclusion",
+            2: "patches",
+            3: "pitted_surface",
+            4: "rolled-in_scale",
+            5: "scratches"
         }
 
     def detect_frame(self, frame_data: str) -> dict:
@@ -106,9 +109,9 @@ class CameraDetectionService:
         h, w = frame.shape[:2]
         mock_boxes = [
             {"x1": w * 0.1, "y1": h * 0.15, "x2": w * 0.3, "y2": h * 0.35,
-             "confidence": 0.92, "class_id": 4, "class_name": "airplane"},
+            "confidence": 0.92, "class_id": 0, "class_name": "crazing"},
             {"x1": w * 0.4, "y1": h * 0.2, "x2": w * 0.55, "y2": h * 0.38,
-             "confidence": 0.87, "class_id": 4, "class_name": "airplane"},
+            "confidence": 0.87, "class_id": 1, "class_name": "inclusion"},
         ]
 
         _, buffer = cv2.imencode('.jpg', frame)

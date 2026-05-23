@@ -39,7 +39,7 @@ class Settings(BaseModel):
     
     # YOLO模型配置
     YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "neu_model.pt")
-    CONFIDENCE_THRESHOLD: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
+    CONFIDENCE_THRESHOLD: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.35"))
     IOU_THRESHOLD: float = float(os.getenv("IOU_THRESHOLD", "0.45"))
     
     # 文件存储配置
