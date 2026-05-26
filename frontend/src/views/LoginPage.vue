@@ -42,11 +42,18 @@
 
         <el-form-item class="form-actions">
           <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
-          <router-link to="/forgot-password" class="forgot-password">忘记密码?</router-link>
+          <router-link to="/forgot-password" class="forgot-password"
+            >忘记密码?</router-link
+          >
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" size="large" class="login-btn" @click="handleLogin">
+          <el-button
+            type="primary"
+            size="large"
+            class="login-btn"
+            @click="handleLogin"
+          >
             登录
           </el-button>
         </el-form-item>
@@ -64,6 +71,8 @@
 import { ref, reactive } from "vue";
 import { Picture, User, Lock } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
+import { login } from "@/api/auth"; // 引入登录 API
+import { ElMessage } from "element-plus"; // 引入消息提示
 
 const router = useRouter();
 
@@ -87,11 +96,23 @@ const loginRules = {
 const loginFormRef = ref(null);
 
 const handleLogin = () => {
-  loginFormRef.value.validate((valid) => {
-    if (valid) {
-      console.log("登录请求:", loginForm);
-      localStorage.setItem("token", "mock-token");
-      router.push("/detection");
+  loginFormRef.value.validate(async (valid) => {
+    if (!valid) return;
+    try {
+      const res = await login({
+        username: loginForm.username,
+        password: loginForm.password,
+      });
+      if (res.code === 200) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userInfo", JSON.stringify(res.data.userInfo));
+        router.push("/detection");
+      } else {
+        ElMessage.error(res.message || "登录失败");
+      }
+    } catch (error) {
+      // 错误已在 request 拦截器中提示，这里可忽略
+      console.error(error);
     }
   });
 };

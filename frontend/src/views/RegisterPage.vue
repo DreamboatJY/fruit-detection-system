@@ -75,7 +75,12 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" size="large" class="register-btn" @click="handleRegister">
+          <el-button
+            type="primary"
+            size="large"
+            class="register-btn"
+            @click="handleRegister"
+          >
             注册
           </el-button>
         </el-form-item>
@@ -93,6 +98,8 @@
 import { ref, reactive } from "vue";
 import { UserFilled, User, Message, Lock } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
+import { register } from "@/api/auth"; // 引入注册 API
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
 
@@ -108,7 +115,11 @@ const registerRules = {
   username: [
     { required: true, message: "请输入用户名", trigger: "blur" },
     { min: 3, max: 20, message: "用户名长度在3到20个字符", trigger: "blur" },
-    { pattern: /^[a-zA-Z0-9_]+$/, message: "用户名只能包含字母、数字和下划线", trigger: "blur" },
+    {
+      pattern: /^[a-zA-Z0-9_]+$/,
+      message: "用户名只能包含字母、数字和下划线",
+      trigger: "blur",
+    },
   ],
   email: [
     { required: true, message: "请输入邮箱", trigger: "blur" },
@@ -117,7 +128,11 @@ const registerRules = {
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
     { min: 6, max: 30, message: "密码长度在6到30个字符", trigger: "blur" },
-    { pattern: /^(?=.*[a-zA-Z])(?=.*\d)/, message: "密码需包含字母和数字", trigger: "blur" },
+    {
+      pattern: /^(?=.*[a-zA-Z])(?=.*\d)/,
+      message: "密码需包含字母和数字",
+      trigger: "blur",
+    },
   ],
   confirmPassword: [
     { required: true, message: "请确认密码", trigger: "blur" },
@@ -148,14 +163,24 @@ const registerRules = {
 
 const registerFormRef = ref(null);
 
-const handleRegister = () => {
-  registerFormRef.value.validate((valid) => {
-    if (valid) {
-      console.log("注册请求:", registerForm);
-      localStorage.setItem("token", "mock-token");
-      router.push("/detection");
+const handleRegister = async () => {
+  try {
+    await registerFormRef.value.validate();
+    const res = await register({
+      username: registerForm.username,
+      email: registerForm.email,
+      password: registerForm.password,
+    });
+    if (res.code === 200) {
+      ElMessage.success("注册成功，请登录");
+      router.push("/login");
+    } else {
+      ElMessage.error(res.message || "注册失败");
     }
-  });
+  } catch (error) {
+    // 表单验证失败或接口错误
+    console.error(error);
+  }
 };
 </script>
 
