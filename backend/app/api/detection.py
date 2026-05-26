@@ -4,7 +4,7 @@ from app.services.detection_service import detection_service
 from app.services.video_detection_service import video_detection_service
 from app.utils.file_utils import save_upload_file, ensure_directories
 from app.config import settings
-from app.models.schemas import SingleDetectionResponse, TargetListResponse, TargetItem
+from app.schemas.detection_schema import SingleDetectionResponse, TargetItem, TargetListResponse
 
 router = APIRouter(prefix="/detection", tags=["detection"])
 

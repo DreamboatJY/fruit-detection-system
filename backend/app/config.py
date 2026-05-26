@@ -1,5 +1,13 @@
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 from pydantic import BaseModel
+from typing import List
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BACKEND_DIR / ".env", encoding="utf-8")
+
 
 class Settings(BaseModel):
     """应用配置类"""

@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 import cv2
 from app.config import settings
-from app.models.schemas import DetectionBox, DetectionResult
+from app.schemas.detection_schema import DetectionBox, DetectionResult
 from app.utils.file_utils import get_file_url
 
 
