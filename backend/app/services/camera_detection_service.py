@@ -5,7 +5,7 @@ import uuid
 import cv2
 import numpy as np
 from app.config import settings
-from app.models.schemas import DetectionBox
+from app.schemas.detection_schema import DetectionBox
 
 
 class CameraDetectionService:
