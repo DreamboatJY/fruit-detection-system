@@ -205,6 +205,29 @@ class SingleDetectionResponse(BaseModel):
     data: Optional[DetectionResult] = None
 
 
+class RealtimeDetectionResult(BaseModel):
+    """
+    实时帧检测结果。
+
+    用于视频播放时的单帧检测，不包含持久化记录和文件 URL。
+    """
+    boxes: List[DetectionBox]
+    total_objects: int
+    detection_time: float
+    image_width: int
+    image_height: int
+    model_name: str
+
+
+class RealtimeDetectionResponse(BaseModel):
+    """
+    实时帧检测 API 响应模型。
+    """
+    success: bool
+    message: str
+    data: Optional[RealtimeDetectionResult] = None
+
+
 class BatchDetectionItem(BaseModel):
     """
     批量检测中的单张图片结果

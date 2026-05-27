@@ -12,6 +12,29 @@ export const detectSingleImage = (data) => {
   });
 };
 
+// 摄像头实时单帧检测接口
+export const detectFrame = (data) => {
+  return request({
+    url: "/detection/camera/detect",
+    method: "post",
+    data,
+    timeout: 15000,
+  });
+};
+
+// 视频实时单帧检测接口
+export const detectRealtimeFrame = (data) => {
+  return request({
+    url: "/video-detection/realtime-frame",
+    method: "post",
+    data,
+    timeout: 10000,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
 // 批量检测接口
 export const detectBatchImages = (data) => {
   return request({

@@ -33,6 +33,8 @@ import csv
 import io
 import json
 import zipfile
+import base64
+import binascii
 from datetime import datetime
 from typing import List
 
@@ -46,8 +48,12 @@ logger = logging.getLogger(__name__)
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Path, Response, status, BackgroundTasks
 from fastapi.responses import StreamingResponse
 
+import cv2
+import numpy as np
+
 # 导入检测服务
 from app.services.detection_service import detection_service
+from app.services.camera_detection_service import camera_detection_service
 
 # 导入 MinIO 服务
 from app.services.minio_service import minio_service
@@ -200,6 +206,22 @@ def _sync_batch_counters(db, task: BatchDetectionTask):
     )
 
 
+def _clamp_float(value, default: float, minimum: float, maximum: float) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return default
+    return max(minimum, min(maximum, number))
+
+
+def _clamp_int(value, default: int, minimum: int, maximum: int) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(minimum, min(maximum, number))
+
+
 def _process_batch_task(batch_id: str):
     batch_uuid = _to_uuid(batch_id)
     db = SessionLocal()
@@ -329,6 +351,78 @@ def _process_batch_task(batch_id: str):
 # =============================================================================
 # 单图检测接口
 # =============================================================================
+
+@router.post("/camera/detect")
+async def detect_camera_frame(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    摄像头实时检测接口。
+
+    接收前端截取的 Base64 JPEG 帧，只执行轻量推理并返回检测框，不写入历史记录。
+    """
+    try:
+        image_data = request.get("image") if isinstance(request, dict) else None
+        if not image_data:
+            return {"success": False, "message": "缺少图像数据"}
+
+        if "," in image_data:
+            image_data = image_data.split(",", 1)[1]
+
+        try:
+            image_bytes = base64.b64decode(image_data, validate=True)
+        except (binascii.Error, ValueError):
+            return {"success": False, "message": "图像 Base64 数据无效"}
+
+        image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+        image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+        if image is None:
+            return {"success": False, "message": "图像解码失败"}
+
+        confidence_threshold = _clamp_float(
+            request.get("confidence_threshold"),
+            settings.confidence_threshold,
+            0.0,
+            1.0,
+        )
+        iou_threshold = _clamp_float(
+            request.get("iou_threshold"),
+            settings.iou_threshold,
+            0.0,
+            1.0,
+        )
+        model_image_size = _clamp_int(
+            request.get("model_image_size"),
+            320,
+            160,
+            1280,
+        )
+
+        result = camera_detection_service.detect_image(
+            image,
+            confidence_threshold=confidence_threshold,
+            iou_threshold=iou_threshold,
+            model_image_size=model_image_size,
+        )
+        return {
+            "success": True,
+            "message": "检测成功",
+            "data": {
+                "boxes": result.get("boxes", []),
+                "frame_index": result.get("frame_index", 0),
+                "fps": result.get("fps", 0),
+                "detection_time": round(result.get("detection_time", 0), 3),
+                "total_objects": result.get("total_objects", 0),
+                "confidence_threshold": confidence_threshold,
+                "iou_threshold": iou_threshold,
+                "model_image_size": model_image_size,
+            },
+        }
+    except Exception as e:
+        logger.exception("摄像头帧检测失败 - 用户ID: %s", current_user.id)
+        return {"success": False, "message": f"图像检测失败: {str(e)}"}
+
 
 @router.post("/single", response_model=SingleDetectionResponse)
 async def detect_single_image(
@@ -936,17 +1030,19 @@ async def get_target_list():
 
     功能：
     - 返回系统支持检测的所有目标类别
-    - RSOD 数据集包含 4 种遥感目标
+    - NEU-DET 数据集包含 6 类钢材表面缺陷
 
     返回：
         TargetListResponse: 包含目标类别列表的响应
     """
-    # 定义 RSOD 数据集支持检测的目标类别列表
+    # 定义 NEU-DET 数据集支持检测的缺陷类别列表
     targets = [
-        TargetItem(id=0, name="aircraft", chinese_name="飞机", description="固定翼飞机、直升机等"),
-        TargetItem(id=1, name="oiltank", chinese_name="油罐", description="储油罐、化工罐等"),
-        TargetItem(id=2, name="overpass", chinese_name="立交桥", description="各类立交桥"),
-        TargetItem(id=3, name="playground", chinese_name="操场", description="运动场、操场等"),
+        TargetItem(id=0, name="crazing", chinese_name="裂纹", description="钢材表面裂纹缺陷"),
+        TargetItem(id=1, name="inclusion", chinese_name="夹杂物", description="钢材表面夹杂物缺陷"),
+        TargetItem(id=2, name="patches", chinese_name="斑块", description="钢材表面斑块缺陷"),
+        TargetItem(id=3, name="pitted_surface", chinese_name="麻面", description="钢材表面麻点缺陷"),
+        TargetItem(id=4, name="rolled-in_scale", chinese_name="轧制氧化皮", description="轧制氧化皮缺陷"),
+        TargetItem(id=5, name="scratches", chinese_name="划痕", description="钢材表面划痕缺陷"),
     ]
 
     # 返回目标列表响应

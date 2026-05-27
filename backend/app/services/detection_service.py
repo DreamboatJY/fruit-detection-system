@@ -58,7 +58,7 @@ import cv2
 from app.config import settings
 
 # 导入数据模型
-from app.models.schemas import DetectionBox, DetectionResult
+from app.models.schemas import DetectionBox, DetectionResult, RealtimeDetectionResult
 from app.models.database import BatchDetectionTask, DetectionRecord, DetectionResult as DBDetectionResult, SessionLocal
 
 # 导入数据库会话
@@ -281,20 +281,22 @@ class DetectionService:
         初始化类别名称映射
 
         功能：
-        - 定义 RSOD 数据集的 4 类目标名称
+        - 定义 NEU-DET 数据集的 6 类钢材表面缺陷名称
         - 类别 ID 从 0 开始
 
         说明：
-        - RSOD 数据集包含 4 种遥感目标
-        - 支持飞机、油罐、立交桥、操场的检测
+        - NEU-DET 数据集包含 6 类钢材表面缺陷
+        - 支持裂纹、夹杂物、斑块、麻面、轧制氧化皮、划痕的检测
         """
-        # RSOD 数据集 4 类目标名称映射
+        # NEU-DET 数据集 6 类缺陷名称映射
         # 类别 ID：目标名称
         self.class_names = {
-            0: "aircraft",    # 飞机
-            1: "oiltank",     # 油罐
-            2: "overpass",    # 立交桥
-            3: "playground",  # 操场
+            0: "crazing",
+            1: "inclusion",
+            2: "patches",
+            3: "pitted_surface",
+            4: "rolled-in_scale",
+            5: "scratches",
         }
 
     def get_class_chinese_name(self, class_name: str) -> str:
@@ -308,10 +310,12 @@ class DetectionService:
             str: 类别中文名称
         """
         chinese_names = {
-            "aircraft": "飞机",
-            "oiltank": "油罐",
-            "overpass": "立交桥",
-            "playground": "操场"
+            "crazing": "裂纹",
+            "inclusion": "夹杂物",
+            "patches": "斑块",
+            "pitted_surface": "麻面",
+            "rolled-in_scale": "轧制氧化皮",
+            "scratches": "划痕",
         }
         return chinese_names.get(class_name, class_name)
 
@@ -512,6 +516,57 @@ class DetectionService:
             detection_time=round(detection_time, 3),     # 检测耗时（秒）
             model_name=model_name,                       # 使用的模型名称
             created_at=datetime.now()                   # 创建时间
+        )
+
+    def detect_frame_realtime(
+        self,
+        image,
+        model_name: str = "rsod-yolo11n",
+        confidence_threshold: float = 0.25,
+        iou_threshold: float = 0.7,
+    ) -> RealtimeDetectionResult:
+        """
+        实时视频帧检测。
+
+        接收 OpenCV 解码后的 numpy 图像，只返回检测框信息，不保存数据库或 MinIO。
+        """
+        if self.model is None:
+            self._load_model_smart()
+
+        start_time = time.time()
+        results = self.model.predict(
+            source=image,
+            conf=confidence_threshold,
+            iou=iou_threshold,
+            save=False,
+        )
+
+        boxes = []
+        for result in results:
+            for box in result.boxes:
+                x1, y1, x2, y2 = box.xyxy[0].tolist()
+                confidence = float(box.conf[0])
+                class_id = int(box.cls[0])
+                class_name = self.class_names.get(class_id, f"class_{class_id}")
+                boxes.append(DetectionBox(
+                    x1=round(x1, 2),
+                    y1=round(y1, 2),
+                    x2=round(x2, 2),
+                    y2=round(y2, 2),
+                    confidence=round(confidence, 4),
+                    class_id=class_id,
+                    class_name=class_name,
+                    chinese_name=self.get_class_chinese_name(class_name),
+                ))
+
+        detection_time = time.time() - start_time
+        return RealtimeDetectionResult(
+            boxes=boxes,
+            total_objects=len(boxes),
+            detection_time=round(detection_time, 3),
+            image_width=image.shape[1] if len(image.shape) >= 2 else 0,
+            image_height=image.shape[0] if len(image.shape) >= 2 else 0,
+            model_name=model_name,
         )
 
     def _save_to_database(self,

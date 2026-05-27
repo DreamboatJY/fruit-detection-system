@@ -7,9 +7,9 @@
         <span class="separator">›</span>
         <span class="active">智能检测</span>
       </div>
-      <h1 class="page-title">上传遥感影像，立即识别多类目标</h1>
+      <h1 class="page-title">上传钢材表面图像，立即识别六类缺陷</h1>
       <p class="page-subtitle">
-        支持飞机 / 油罐 / 操场 / 建筑物 / 船舶 / 农业虫害等多目标检测
+        支持裂纹 / 夹杂物 / 斑块 / 麻面 / 轧制氧化皮 / 划痕等多缺陷检测
       </p>
     </div>
 
@@ -31,7 +31,7 @@
         @click="handleTabClick(tab.key)"
       >
         <input
-          v-if="tab.key !== 'batch'"
+          v-if="tab.key !== 'batch' && tab.key !== 'camera' && tab.key !== 'video'"
           type="file"
           :accept="tab.accept"
           :multiple="tab.multiple"
@@ -104,11 +104,11 @@
         <div class="panel-header">
           <span class="panel-title">检测预览</span>
           <el-tag
-            :type="hasImage && detectionResult ? 'success' : 'info'"
+            :type="hasDetectionContext && activeDetectionResult ? 'success' : 'info'"
             effect="light"
             class="result-tag"
           >
-            <el-icon class="el-icon--left" v-if="hasImage && detectionResult"
+            <el-icon class="el-icon--left" v-if="hasDetectionContext && activeDetectionResult"
               ><Check
             /></el-icon>
             <el-icon class="el-icon--left" v-else><Upload /></el-icon>
@@ -116,8 +116,24 @@
           </el-tag>
         </div>
 
+        <CameraDetection
+          v-if="activeTab === 'camera'"
+          ref="cameraDetectionRef"
+          @result-change="handleCameraResult"
+          @running-change="handleCameraRunningChange"
+        />
+
+        <VideoDetection
+          v-else-if="activeTab === 'video'"
+          ref="videoDetectionRef"
+          :model-name="selectedModel"
+          @result-change="handleVideoResult"
+          @running-change="handleVideoRunningChange"
+          @context-change="handleVideoContextChange"
+        />
+
         <!-- 图片对比区域 -->
-        <div class="image-compare">
+        <div v-else class="image-compare">
           <div class="image-card">
             <template v-if="hasImage && originalImage">
               <img :src="originalImage" alt="原始图片" class="compare-image" />
@@ -158,7 +174,7 @@
           </div>
           <div class="info-item">
             <span class="info-label">检测模式</span>
-            <span class="info-value">{{ activeTab === "batch" ? "批量检测" : "单图检测" }}</span>
+            <span class="info-value">{{ detectionModeText }}</span>
           </div>
           <div class="info-item">
             <span class="info-label">模型版本</span>
@@ -172,13 +188,13 @@
             <el-icon><List /></el-icon>
             <span class="card-title">识别清单</span>
           </div>
-          <div v-if="!hasImage" class="empty-state">
+          <div v-if="!hasDetectionContext" class="empty-state">
             <el-icon class="empty-icon"><Upload /></el-icon>
-            <p class="empty-text">请上传图片开始检测</p>
-            <p class="empty-desc">上传遥感影像以识别目标</p>
+            <p class="empty-text">{{ emptyStateText }}</p>
+            <p class="empty-desc">{{ emptyStateDesc }}</p>
           </div>
           <div
-            v-else-if="!detectionResult || detectionResult.total_objects === 0"
+            v-else-if="!activeDetectionResult || activeDetectionResult.total_objects === 0"
             class="empty-state"
           >
             <el-icon class="empty-icon"><CircleCheck /></el-icon>
@@ -187,7 +203,7 @@
           </div>
           <div v-else class="detection-list">
             <div
-              v-for="(box, index) in detectionResult.boxes"
+              v-for="(box, index) in activeDetectionResult.boxes"
               :key="index"
               class="detection-item"
             >
@@ -275,12 +291,12 @@
             <span class="card-title">AI 诊断建议</span>
           </div>
           <div class="diagnosis-content">
-            <p v-if="!hasImage">上传图片后将自动生成诊断建议</p>
-            <p v-else-if="!detectionResult">未检测到指定目标</p>
+            <p v-if="!hasDetectionContext">{{ diagnosisEmptyText }}</p>
+            <p v-else-if="!activeDetectionResult">未检测到指定目标</p>
             <p v-else>
-              检测到 {{ detectionResult.total_objects }} 个目标，耗时
-              {{ formatDetectionTime(detectionResult.detection_time) }}s。 模型:
-              {{ detectionResult.model_name }}
+              检测到 {{ activeDetectionResult.total_objects }} 个目标，耗时
+              {{ formatDetectionTime(activeDetectionResult.detection_time) }}s。 模型:
+              {{ activeDetectionResult.model_name }}
             </p>
           </div>
         </div>
@@ -293,7 +309,7 @@
             @click="handleRedetect"
           >
             <el-icon><Refresh /></el-icon>
-            重新检测
+            {{ resetButtonText }}
           </el-button>
           <el-button type="primary" size="default" class="btn-primary">
             查看完整报告
@@ -311,7 +327,6 @@ import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
 import {
   Picture,
   Plus,
-  Folder,
   Monitor,
   Check,
   Grid,
@@ -323,7 +338,10 @@ import {
   View,
   Delete,
   Download,
+  VideoCamera,
 } from "@element-plus/icons-vue";
+import CameraDetection from "../components/CameraDetection.vue";
+import VideoDetection from "../components/VideoDetection.vue";
 import {
   cancelBatch,
   detectBatchImages,
@@ -347,15 +365,73 @@ const batchResult = ref(null);
 const selectedBatchId = ref(null);
 const batchFilter = ref("all");
 const pendingBatchFiles = ref([]);
+const cameraResult = ref(null);
+const cameraRunning = ref(false);
+const cameraDetectionRef = ref(null);
+const videoResult = ref(null);
+const videoRunning = ref(false);
+const videoHasContext = ref(false);
+const videoDetectionRef = ref(null);
 let batchPollTimer = null;
 
 const resultStatusText = computed(() => {
   if (isDetecting.value) return "检测中";
+  if (activeTab.value === "camera") {
+    if (cameraRunning.value) return "实时检测中";
+    return cameraResult.value ? "检测已停止" : "等待开启";
+  }
+  if (activeTab.value === "video") {
+    if (videoRunning.value) return "视频检测中";
+    return videoResult.value ? "检测已停止" : "等待上传";
+  }
   if (activeTab.value === "batch" && batchResult.value) {
     if (["pending", "processing"].includes(batchResult.value.status)) return "批量检测中";
     return batchResult.value.failed > 0 ? "部分完成" : "检测完成";
   }
   return hasImage.value && detectionResult.value ? "检测完成" : "等待上传";
+});
+
+const detectionModeText = computed(() => {
+  if (activeTab.value === "batch") return "批量检测";
+  if (activeTab.value === "camera") return "摄像头实时检测";
+  if (activeTab.value === "video") return "视频检测";
+  return "单图检测";
+});
+
+const activeDetectionResult = computed(() => {
+  if (activeTab.value === "camera") return cameraResult.value;
+  if (activeTab.value === "video") return videoResult.value;
+  return detectionResult.value;
+});
+
+const hasDetectionContext = computed(() => {
+  if (activeTab.value === "camera") return cameraRunning.value || Boolean(cameraResult.value);
+  if (activeTab.value === "video") return videoHasContext.value || Boolean(videoResult.value);
+  return hasImage.value;
+});
+
+const emptyStateText = computed(() => {
+  if (activeTab.value === "camera") return "请开启摄像头";
+  if (activeTab.value === "video") return "请上传视频";
+  return "请上传图片开始检测";
+});
+
+const emptyStateDesc = computed(() => {
+  if (activeTab.value === "camera") return "开启后实时识别画面目标";
+  if (activeTab.value === "video") return "播放视频后实时识别缺陷目标";
+  return "上传钢材表面图像以识别缺陷";
+});
+
+const diagnosisEmptyText = computed(() => {
+  if (activeTab.value === "camera") return "开启摄像头后将实时更新检测结果";
+  if (activeTab.value === "video") return "上传视频并开始检测后将实时更新检测结果";
+  return "上传图片后将自动生成诊断建议";
+});
+
+const resetButtonText = computed(() => {
+  if (activeTab.value === "camera") return "重置摄像头";
+  if (activeTab.value === "video") return "停止视频";
+  return "重新检测";
 });
 
 const filteredBatchItems = computed(() => {
@@ -390,12 +466,12 @@ const functionTabs = [
     multiple: true,
   },
   {
-    key: "ciname",
+    key: "camera",
     name: "摄像头",
     desc: "打开摄像头",
-    icon: Folder,
+    icon: VideoCamera,
     accept: "image/*",
-    multiple: true,
+    multiple: false,
   },
   {
     key: "video",
@@ -411,9 +487,56 @@ const fileInputs = ref([]);
 const batchFileInputRef = ref(null);
 
 const handleTabClick = (key) => {
+  if (activeTab.value === "camera" && key !== "camera") {
+    cameraDetectionRef.value?.stopCamera();
+  }
+  if (activeTab.value === "video" && key !== "video") {
+    videoDetectionRef.value?.stopDetection();
+  }
   activeTab.value = key;
+  if (key === "camera") {
+    stopBatchPolling();
+    isDetecting.value = false;
+    batchResult.value = null;
+    pendingBatchFiles.value = [];
+    detectionResult.value = null;
+    originalImage.value = null;
+    resultImage.value = null;
+    hasImage.value = false;
+  }
+  if (key === "video") {
+    stopBatchPolling();
+    cameraDetectionRef.value?.stopCamera();
+    isDetecting.value = false;
+    batchResult.value = null;
+    pendingBatchFiles.value = [];
+    detectionResult.value = null;
+    originalImage.value = null;
+    resultImage.value = null;
+    hasImage.value = false;
+  }
   // 批量检测：仅切换选项卡，不自动弹出文件选择器，让用户在界面中自主点击上传
   // 单图/摄像头/视频检测：input 已覆盖整个选项卡，原生点击自动弹出文件选择器
+};
+
+const handleCameraResult = (result) => {
+  cameraResult.value = result;
+};
+
+const handleCameraRunningChange = (running) => {
+  cameraRunning.value = running;
+};
+
+const handleVideoResult = (result) => {
+  videoResult.value = result;
+};
+
+const handleVideoRunningChange = (running) => {
+  videoRunning.value = running;
+};
+
+const handleVideoContextChange = (hasContext) => {
+  videoHasContext.value = hasContext;
 };
 
 const triggerBatchFileInput = () => {
@@ -610,6 +733,9 @@ const loadDetectionDetail = async (detectionId) => {
 };
 
 const loadRouteResult = () => {
+  if (activeTab.value === "camera") {
+    cameraDetectionRef.value?.stopCamera();
+  }
   const batchId = route.query.batch_id;
   const detectionId = route.query.detection_id;
 
@@ -688,8 +814,18 @@ const formatDetectionTime = (time) => {
 };
 
 const handleRedetect = () => {
+  if (activeTab.value === "camera") {
+    cameraDetectionRef.value?.stopCamera();
+    cameraResult.value = null;
+    cameraRunning.value = false;
+    return;
+  }
   if (activeTab.value === "batch") {
     triggerBatchFileInput();
+    return;
+  }
+  if (activeTab.value === "video") {
+    videoDetectionRef.value?.stopDetection();
     return;
   }
   const input = document.querySelector(
@@ -702,6 +838,8 @@ const handleRedetect = () => {
 
 onBeforeUnmount(() => {
   stopBatchPolling();
+  cameraDetectionRef.value?.stopCamera();
+  videoDetectionRef.value?.stopDetection();
 });
 
 onMounted(() => {
@@ -1020,7 +1158,7 @@ watch(
 .compare-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .image-label {

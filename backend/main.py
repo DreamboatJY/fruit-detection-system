@@ -29,6 +29,7 @@ from app.config import settings                                  # 配置
 from app.api.auth import router as auth_router                   # 认证 API 路由
 from app.api.detection import router as detection_router         # 检测 API 路由
 from app.api.model import router as model_router                 # 模型管理 API 路由
+from app.api.video_detection import router as video_detection_router # 视频检测 API 路由
 from app.utils.file_utils import ensure_directories              # 确保目录存在
 from app.models.database import init_db                          # 初始化数据库表
 
@@ -73,6 +74,8 @@ app.include_router(auth_router, prefix="/api")
 app.include_router(detection_router, prefix="/api")
 # 所有模型管理相关的 API 都会以 /api/model 为前缀
 app.include_router(model_router, prefix="/api")
+# 所有视频检测相关的 API 都会以 /api/video-detection 为前缀
+app.include_router(video_detection_router, prefix="/api")
 
 
 # =============================================================================
