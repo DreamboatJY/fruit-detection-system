@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
-import { login as loginApi, register as registerApi, getCurrentUser } from "../api/auth";
+import {
+  login as loginApi,
+  register as registerApi,
+  getCurrentUser,
+  updateCurrentUser,
+  uploadAvatar,
+} from "../api/auth";
 
 const TOKEN_KEY = "token";
 const USER_KEY = "user";
@@ -20,6 +26,10 @@ export const useAuthStore = defineStore("auth", {
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(USER_KEY, JSON.stringify(user));
     },
+    setUser(user) {
+      this.user = user;
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    },
     clearAuth() {
       this.token = "";
       this.user = null;
@@ -38,8 +48,19 @@ export const useAuthStore = defineStore("auth", {
     },
     async fetchCurrentUser() {
       const response = await getCurrentUser();
-      this.user = response.user;
-      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+      this.setUser(response.user);
+      return response.user;
+    },
+    async updateProfile(payload) {
+      const response = await updateCurrentUser(payload);
+      this.setUser(response.user);
+      return response.user;
+    },
+    async uploadUserAvatar(file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await uploadAvatar(formData);
+      this.setUser(response.user);
       return response.user;
     },
   },

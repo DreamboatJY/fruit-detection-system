@@ -1170,6 +1170,8 @@ def get_file(bucket: str, filename: str):
             content_type = "image/png"
         elif filename.endswith(".jpg") or filename.endswith(".jpeg"):
             content_type = "image/jpeg"
+        elif filename.endswith(".webp"):
+            content_type = "image/webp"
         
         # 读取所有数据
         data = response.read()

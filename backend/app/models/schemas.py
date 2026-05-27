@@ -52,6 +52,16 @@ class UserLoginRequest(BaseModel):
     password: str = Field(..., min_length=6, max_length=128)
 
 
+class UserProfileUpdateRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=100)
+    nickname: Optional[str] = Field(default=None, max_length=50)
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str = Field(..., min_length=6, max_length=128)
+    new_password: str = Field(..., min_length=6, max_length=128)
+
+
 class UserInfo(BaseModel):
     id: str
     username: str
@@ -73,6 +83,19 @@ class CurrentUserResponse(BaseModel):
     success: bool
     message: str
     user: UserInfo
+
+
+class UserStats(BaseModel):
+    total_detections: int
+    total_targets: int
+    success_rate: float
+    usage_days: int
+
+
+class UserStatsResponse(BaseModel):
+    success: bool
+    message: str
+    data: UserStats
 
 
 # =============================================================================

@@ -13,6 +13,7 @@
 # Bucket 说明：
 #   - rsod-original: 存储用户上传的原始图片
 #   - rsod-results: 存储检测后的结果图片
+#   - rsod-avatars: 存储用户头像
 #   - rsod-models: 存储 AI 模型文件（私有）
 #
 # 使用示例：
@@ -101,6 +102,7 @@ class MinIOService:
         buckets = [
             settings.minio.original_bucket,          # 原始图片存储桶
             settings.minio.results_bucket,            # 结果图片存储桶
+            settings.minio.avatars_bucket,            # 用户头像存储桶
             settings.minio.models_bucket              # 模型文件存储桶
         ]
 
@@ -230,6 +232,45 @@ class MinIOService:
             data=file_bytes,
             length=len(file_content),
             content_type=file.content_type or "image/jpeg"
+        )
+
+        return object_name
+
+    async def upload_avatar(self, file: UploadFile, user_id: str) -> str:
+        """
+        上传用户头像到 MinIO 头像存储桶。
+        """
+        allowed_content_types = {
+            "image/jpeg": "jpg",
+            "image/png": "png",
+            "image/webp": "webp",
+        }
+        allowed_extensions = {"jpg", "jpeg", "png", "webp"}
+        max_size = 2 * 1024 * 1024
+
+        original_name = file.filename or ""
+        extension = original_name.rsplit(".", 1)[-1].lower() if "." in original_name else ""
+        content_type = (file.content_type or "").lower()
+
+        if content_type not in allowed_content_types or extension not in allowed_extensions:
+            raise ValueError("头像仅支持 jpg、jpeg、png、webp 格式")
+
+        file_content = await file.read()
+        if not file_content:
+            raise ValueError("头像文件不能为空")
+        if len(file_content) > max_size:
+            raise ValueError("头像文件不能超过 2MB")
+
+        normalized_extension = "jpg" if extension == "jpeg" else extension
+        object_name = f"{user_id}_{uuid.uuid4().hex}.{normalized_extension}"
+        file_bytes = io.BytesIO(file_content)
+
+        self.client.put_object(
+            bucket_name=settings.minio.avatars_bucket,
+            object_name=object_name,
+            data=file_bytes,
+            length=len(file_content),
+            content_type=content_type,
         )
 
         return object_name

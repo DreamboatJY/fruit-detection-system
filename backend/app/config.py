@@ -90,6 +90,7 @@ class MinIOConfig(BaseModel):
         secure: 是否使用 HTTPS 连接，默认 false（开发环境用 HTTP）
         original_bucket: 原始图片存储桶名称
         results_bucket: 检测结果图片存储桶名称
+        avatars_bucket: 用户头像存储桶名称
         models_bucket: AI 模型文件存储桶名称
     """
 
@@ -116,6 +117,9 @@ class MinIOConfig(BaseModel):
 
     # 检测结果图片存储桶名称，用于保存检测后的图片
     results_bucket: str = "rsod-results"
+
+    # 用户头像存储桶名称，用于保存个人中心头像
+    avatars_bucket: str = "rsod-avatars"
 
     # 模型文件存储桶名称，用于保存 AI 模型文件（设置为私有访问）
     models_bucket: str = "rsod-models"

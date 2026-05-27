@@ -19,10 +19,8 @@
         <el-dropdown trigger="click" @command="handleCommand">
           <div class="user-dropdown">
             <el-avatar class="user-avatar" size="32">
-              <img
-                src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-                alt="用户头像"
-              />
+              <img v-if="authStore.user?.avatar_url" :src="authStore.user.avatar_url" alt="用户头像" />
+              <span v-else>{{ avatarText }}</span>
             </el-avatar>
             <div class="user-info">
               <div class="user-name">{{ authStore.displayName }}</div>
@@ -59,6 +57,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const roleText = computed(() => authStore.user?.role === 'admin' ? '管理员' : '普通用户')
+const avatarText = computed(() => (authStore.displayName || '用').slice(0, 1).toUpperCase())
 
 onMounted(() => {
   if (authStore.token && !authStore.user) {
