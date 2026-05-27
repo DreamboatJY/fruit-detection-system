@@ -1,18 +1,18 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: rsod-postgres
+    container_name: neu-det-postgres
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_USER: rsod_user
-      POSTGRES_PASSWORD: rsod_password
-      POSTGRES_DB: rsod_platform
+      POSTGRES_USER: neu_det_user
+      POSTGRES_PASSWORD: neu_det_password
+      POSTGRES_DB: neu_det_platform
     volumes:
       - ./storage/postgres/data:/var/lib/postgresql/data
       - ./storage/postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rsod_user -d rsod_platform"]
+      test: ["CMD-SHELL", "pg_isready -U neu_det_user -d neu_det_platform"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,7 +20,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: rsod-minio
+    container_name: neu-det-minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -40,7 +40,7 @@ services:
 
   redis:
     image: redis:latest
-    container_name: rsod-redis
+    container_name: neu-det-redis
     ports:
       - "6379:6379"
     volumes:

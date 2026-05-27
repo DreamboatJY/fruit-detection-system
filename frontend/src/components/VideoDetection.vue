@@ -115,7 +115,7 @@ import { detectRealtimeFrame } from "../api/detection";
 const props = defineProps({
   modelName: {
     type: String,
-    default: "rsod-yolo11n",
+    default: "neu-det-yolo11n",
   },
 });
 

@@ -11,19 +11,19 @@
 #   适合存储图片、视频、文档、模型文件等非结构化数据
 #
 # Bucket 说明：
-#   - rsod-original: 存储用户上传的原始图片
-#   - rsod-results: 存储检测后的结果图片
-#   - rsod-avatars: 存储用户头像
-#   - rsod-models: 存储 AI 模型文件（私有）
+#   - neu-det-original: 存储用户上传的原始图片
+#   - neu-det-results: 存储检测后的结果图片
+#   - neu-det-avatars: 存储用户头像
+#   - neu-det-models: 存储 AI 模型文件（私有）
 #
 # 使用示例：
 #   from app.services.minio_service import minio_service
 #
 #   # 上传图片
-#   object_name = minio_service.upload_image(file, "rsod-original")
+#   object_name = minio_service.upload_image(file, "neu-det-original")
 #
 #   # 获取访问 URL
-#   url = minio_service.get_public_url("rsod-original", object_name)
+#   url = minio_service.get_public_url("neu-det-original", object_name)
 # =============================================================================
 
 # 导入 MinIO Python SDK 的 Minio 客户端类
@@ -384,7 +384,7 @@ class MinIOService:
 
         功能：
             - 直接生成公开可访问的 URL
-            - 适用于设置为公开访问的 Bucket（如 rsod-original, rsod-results）
+            - 适用于设置为公开访问的 Bucket（如 neu-det-original, neu-det-results）
             - 格式：http://host:port/bucket/object
         """
         # 格式：http://主机:端口/Bucket/对象名
@@ -538,7 +538,7 @@ class MinIOService:
         """
         return self.delete_object(settings.minio.models_bucket, object_name)
     
-    def get_latest_model(self, model_prefix: str = "rsod-yolo11n-best") -> Optional[str]:
+    def get_latest_model(self, model_prefix: str = "neu-det-yolo11n-best") -> Optional[str]:
         """
         获取最新版本的模型（兼容新旧两种格式）
         
@@ -565,7 +565,7 @@ class MinIOService:
             # 解析版本号并排序（兼容新旧格式）
             def parse_model_name(filename: str):
                 try:
-                    # 新格式：rsod-yolo11n-best_v1.0.0_20240101090000.pt
+                    # 新格式：neu-det-yolo11n-best_v1.0.0_20240101090000.pt
                     if '_v' in filename:
                         parts = filename.split('_v')
                         if len(parts) >= 2:
@@ -579,7 +579,7 @@ class MinIOService:
                                 except:
                                     pass
                     
-                    # 旧格式：rsod-yolo11n-best_1779125662.pt
+                    # 旧格式：neu-det-yolo11n-best_1779125662.pt
                     if '_' in filename and not '_v' in filename:
                         parts = filename.rsplit('_', 1)
                         if len(parts) >= 2:
@@ -606,7 +606,7 @@ class MinIOService:
         获取模型的元数据
         
         参数：
-            model_object_name: 模型对象名称（如 rsod-yolo11n-best_v1.0.0_20240101090000.pt）
+            model_object_name: 模型对象名称（如 neu-det-yolo11n-best_v1.0.0_20240101090000.pt）
             
         返回：
             Optional[dict]: 元数据字典，无找到返回 None
@@ -626,7 +626,7 @@ class MinIOService:
             logger.error("获取模型元数据失败: %s", str(e))
             return None
     
-    def list_models_with_metadata(self, model_prefix: str = "rsod-yolo11n-best") -> list:
+    def list_models_with_metadata(self, model_prefix: str = "neu-det-yolo11n-best") -> list:
         """
         列出所有模型及其元数据
         

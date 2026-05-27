@@ -16,7 +16,7 @@
     <!-- 模型选择器 -->
     <div class="model-selector">
       <el-select v-model="selectedModel" style="width: 180px">
-        <el-option label="rsod-yolo11n" value="rsod-yolo11n" />
+        <el-option label="neu-det-yolo11n" value="neu-det-yolo11n" />
       </el-select>
     </div>
 
@@ -353,7 +353,7 @@ import {
   retryFailedBatch,
 } from "../api/detection";
 
-const selectedModel = ref("rsod-yolo11n");
+const selectedModel = ref("neu-det-yolo11n");
 const route = useRoute();
 const activeTab = ref("single");
 const originalImage = ref(null);

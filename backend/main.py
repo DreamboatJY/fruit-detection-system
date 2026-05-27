@@ -43,7 +43,7 @@ init_db()
 app = FastAPI(
     title=settings.app_name,                                    # API 文档标题
     version=settings.app_version,                                # API 版本
-    description="遥感目标检测平台后端 API"                        # API 描述
+    description="钢材表面缺陷检测平台后端 API"                        # API 描述
 )
 
 # =============================================================================

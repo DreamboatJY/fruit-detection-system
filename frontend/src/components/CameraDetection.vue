@@ -395,7 +395,7 @@ const emitResult = () => {
     boxes: currentBoxes.value,
     total_objects: totalObjects.value,
     detection_time: detectionTime.value,
-    model_name: "rsod-yolo11n",
+    model_name: "neu-det-yolo11n",
     frame_index: frameIndex.value,
     fps: fps.value,
   });

@@ -133,10 +133,10 @@ class DetectionBox(BaseModel):
     # 置信度，表示检测框包含目标的置信程度（0.0 - 1.0）
     confidence: float
 
-    # 目标类别 ID（RSOD 数据集 0-3）
+    # 目标类别 ID（NEU-DET 数据集 0-5）
     class_id: int
 
-    # 目标类别名称（英文，如 "aircraft", "oiltank", "overpass", "playground"）
+    # 目标类别名称（英文，如 "crazing", "inclusion", "patches" 等）
     class_name: str
 
     # 目标类别名称（中文）

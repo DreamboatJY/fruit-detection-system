@@ -17,7 +17,7 @@ router = APIRouter(prefix="/video-detection", tags=["video-detection"])
 @router.post("/realtime-frame", response_model=RealtimeDetectionResponse)
 async def detect_realtime_frame(
     file: UploadFile = File(...),
-    model_name: str = Form("rsod-yolo11n"),
+    model_name: str = Form("neu-det-yolo11n"),
     confidence_threshold: float = Form(0.25),
     iou_threshold: float = Form(0.7),
     current_user: User = Depends(get_current_user),

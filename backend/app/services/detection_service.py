@@ -62,10 +62,7 @@ from app.models.schemas import DetectionBox, DetectionResult, RealtimeDetectionR
 from app.models.database import BatchDetectionTask, DetectionRecord, DetectionResult as DBDetectionResult, SessionLocal
 
 # 导入数据库会话
-try:
-    from app.database import get_db
-except ImportError:
-    from app.models.database import get_db
+from app.models.database import get_db
 
 # 导入文件工具函数
 from app.utils.file_utils import get_file_url
@@ -115,7 +112,7 @@ class DetectionService:
         # 本地模型信息存储路径
         self.local_model_info_path = Path(settings.yolo_model_path).parent / "model_info.json"
 
-        # 类别名称映射字典（RSOD 数据集 4 类）
+        # 类别名称映射字典（NEU-DET 数据集 6 类）
         self.class_names = {}
 
         # 加载 YOLO 模型（智能版本检查）
@@ -322,7 +319,7 @@ class DetectionService:
     def detect_single_image(self, 
                            image_path: str, 
                            user_id: Optional[str] = None,
-                           model_name: str = "rsod-yolo11n",
+                           model_name: str = "neu-det-yolo11n",
                            minio_svc = None,
                            detection_type: str = "single",
                            detection_id: Optional[str] = None,
@@ -503,8 +500,8 @@ class DetectionService:
 
         # 构建 FastAPI 代理接口 URL
         # 格式：http://localhost:8000/api/detection/files/{bucket}/{filename}
-        original_image_url = f"http://localhost:8000/api/detection/files/rsod-original/{original_object_name}"
-        result_image_url = f"http://localhost:8000/api/detection/files/rsod-results/{result_object_name}"
+        original_image_url = f"http://localhost:8000/api/detection/files/neu-det-original/{original_object_name}"
+        result_image_url = f"http://localhost:8000/api/detection/files/neu-det-results/{result_object_name}"
 
         # 构建检测结果对象
         return DetectionResult(
@@ -521,7 +518,7 @@ class DetectionService:
     def detect_frame_realtime(
         self,
         image,
-        model_name: str = "rsod-yolo11n",
+        model_name: str = "neu-det-yolo11n",
         confidence_threshold: float = 0.25,
         iou_threshold: float = 0.7,
     ) -> RealtimeDetectionResult:

@@ -50,9 +50,9 @@ class DatabaseConfig(BaseModel):
     配置项：
         host: 数据库服务器地址，默认 localhost
         port: 数据库服务端口，默认 5432（PostgreSQL 标准端口）
-        username: 数据库用户名，默认 rsod_user
-        password: 数据库密码，默认 rsod_password
-        database: 数据库名称，默认 rsod_platform
+        username: 数据库用户名，默认 neu_det_user
+        password: 数据库密码，默认 neu_det_password
+        database: 数据库名称，默认 neu_det_platform
     """
 
     # 数据库主机地址，从环境变量 DB_HOST 读取，默认为 localhost
@@ -61,15 +61,15 @@ class DatabaseConfig(BaseModel):
     # 数据库端口，从环境变量 DB_PORT 读取，转换为整数，默认为 5432
     port: int = int(os.getenv("DB_PORT", "5433"))
 
-    # 数据库用户名，从环境变量 DB_USERNAME 读取，默认为 rsod_user
-    username: str = os.getenv("DB_USERNAME", "rsod_user")
+    # 数据库用户名，从环境变量 DB_USERNAME 读取，默认为 neu_det_user
+    username: str = os.getenv("DB_USERNAME", "neu_det_user")
 
-    # 数据库密码，从环境变量 DB_PASSWORD 读取，默认为 rsod_password
+    # 数据库密码，从环境变量 DB_PASSWORD 读取，默认为 neu_det_password
     # 注意：生产环境应使用强密码并通过环境变量传入
-    password: str = os.getenv("DB_PASSWORD", "rsod_password")
+    password: str = os.getenv("DB_PASSWORD", "neu_det_password")
 
-    # 数据库名称，从环境变量 DB_DATABASE 读取，默认为 rsod_platform
-    database: str = os.getenv("DB_DATABASE", "rsod_platform")
+    # 数据库名称，从环境变量 DB_DATABASE 读取，默认为 neu_det_platform
+    database: str = os.getenv("DB_DATABASE", "neu_det_platform")
 
 
 # =============================================================================
@@ -113,16 +113,16 @@ class MinIOConfig(BaseModel):
     secure: bool = os.getenv("MINIO_SECURE", "false").lower() in ("true", "1", "yes")
 
     # 原始图片存储桶名称，用于保存上传的原始图片
-    original_bucket: str = "rsod-original"
+    original_bucket: str = "neu-det-original"
 
     # 检测结果图片存储桶名称，用于保存检测后的图片
-    results_bucket: str = "rsod-results"
+    results_bucket: str = "neu-det-results"
 
     # 用户头像存储桶名称，用于保存个人中心头像
-    avatars_bucket: str = "rsod-avatars"
+    avatars_bucket: str = "neu-det-avatars"
 
     # 模型文件存储桶名称，用于保存 AI 模型文件（设置为私有访问）
-    models_bucket: str = "rsod-models"
+    models_bucket: str = "neu-det-models"
 
 
 # =============================================================================
@@ -184,7 +184,7 @@ class Settings(BaseModel):
     # -------------------------------------------------------------------------
 
     # 应用名称，用于 API 文档标题
-    app_name: str = os.getenv("APP_NAME", "RSOD Detection Platform")
+    app_name: str = os.getenv("APP_NAME", "NEU-DET Detection Platform")
 
     # 应用版本号
     app_version: str = os.getenv("APP_VERSION", "1.0.0")
@@ -289,7 +289,7 @@ class Settings(BaseModel):
     # -------------------------------------------------------------------------
 
     # JWT 签名密钥。生产环境必须通过环境变量 JWT_SECRET_KEY 设置为强随机值。
-    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "rsod-dev-secret-key")
+    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "neu-det-dev-secret-key")
 
     # JWT 签名算法
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")

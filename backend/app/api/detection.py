@@ -18,7 +18,7 @@
 #   # 前端调用
 #   const formData = new FormData();
 #   formData.append('file', imageFile);
-#   formData.append('model_name', 'rsod-yolo11n');
+#   formData.append('model_name', 'neu-det-yolo11n');
 #   const response = await fetch('/api/detection/single', {
 #       method: 'POST',
 #       body: formData
@@ -134,7 +134,7 @@ def _record_to_batch_item(record: DetectionRecord) -> BatchDetectionItem:
             boxes=[DetectionBox(**box) for box in boxes],
             total_objects=record.total_objects or 0,
             detection_time=round(record.detection_time or 0, 3),
-            model_name=record.model_name or "rsod-yolo11n",
+            model_name=record.model_name or "neu-det-yolo11n",
             created_at=record.created_at,
         )
 
@@ -171,7 +171,7 @@ def _task_to_summary(db, task: BatchDetectionTask, include_items: bool = False) 
         progress=progress,
         total_objects=task.total_objects or 0,
         detection_time=round(task.total_time or 0, 3),
-        model_name=task.model_name or "rsod-yolo11n",
+        model_name=task.model_name or "neu-det-yolo11n",
         created_at=task.created_at,
         started_at=task.started_at,
         completed_at=task.completed_at,
@@ -427,7 +427,7 @@ async def detect_camera_frame(
 @router.post("/single", response_model=SingleDetectionResponse)
 async def detect_single_image(
     file: UploadFile = File(...),      # 上传的图片文件（必填）
-    model_name: str = Form("rsod-yolo11n"), # 使用的模型名称（可选）
+    model_name: str = Form("neu-det-yolo11n"), # 使用的模型名称（可选）
     current_user: User = Depends(get_current_user)  # 当前登录用户
 ):
     """
@@ -442,7 +442,7 @@ async def detect_single_image(
 
     参数：
         file: 上传的图片文件，支持 jpg、png 等格式
-        model_name: 使用的模型名称（可选，默认 rsod-yolo11n）
+        model_name: 使用的模型名称（可选，默认 neu-det-yolo11n）
         current_user: 当前登录用户（由 JWT 自动解析）
 
     返回：
@@ -459,7 +459,7 @@ async def detect_single_image(
                 "boxes": [...],
                 "total_objects": 5,
                 "detection_time": 0.523,
-                "model_name": "rsod-yolo11n",
+                "model_name": "neu-det-yolo11n",
                 "created_at": "2024-12-01T14:30:00"
             }
         }
@@ -516,7 +516,7 @@ async def detect_single_image(
 async def detect_batch_images(
     background_tasks: BackgroundTasks,
     files: List[UploadFile] = File(...),
-    model_name: str = Form("rsod-yolo11n"),
+    model_name: str = Form("neu-det-yolo11n"),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -900,7 +900,7 @@ async def get_detection_history(
                     "result_image_url": "http://localhost:8000/static/results/xxx.jpg",
                     "total_objects": 3,
                     "created_at": "2024-12-01T14:30:00",
-                    "model_name": "rsod-yolo11n"
+                    "model_name": "neu-det-yolo11n"
                 },
                 ...
             ],
@@ -950,7 +950,7 @@ async def get_detection_history(
                 result_image_url=result_url,
                 total_objects=task.total_objects or 0,
                 created_at=task.created_at,
-                model_name=task.model_name or "rsod-yolo11n",
+                model_name=task.model_name or "neu-det-yolo11n",
                 filename=f"批量任务 {str(task.id)[:8]}",
                 status=task.status or "pending",
                 type="batch",
@@ -968,12 +968,12 @@ async def get_detection_history(
             # 构建 FastAPI 代理接口 URL
             # 格式：http://localhost:8000/api/detection/files/{bucket}/{filename}
             if original_filename:
-                image_url = f"http://localhost:8000/api/detection/files/rsod-original/{original_filename}"
+                image_url = f"http://localhost:8000/api/detection/files/neu-det-original/{original_filename}"
             else:
                 image_url = ""
             
             if result_filename:
-                result_url = f"http://localhost:8000/api/detection/files/rsod-results/{result_filename}"
+                result_url = f"http://localhost:8000/api/detection/files/neu-det-results/{result_filename}"
             else:
                 result_url = ""
 
@@ -983,7 +983,7 @@ async def get_detection_history(
                 result_image_url=result_url,
                 total_objects=record.total_objects or 0,
                 created_at=record.created_at,
-                model_name=record.model_name or "rsod-yolo11n",
+                model_name=record.model_name or "neu-det-yolo11n",
                 filename=original_filename or "detection.jpg",
                 status=record.status or "completed",
                 type=record.type or "single",
@@ -1096,12 +1096,12 @@ async def get_detection_by_id(
         
         # 构建 FastAPI 代理接口 URL
         if original_filename:
-            image_url = f"http://localhost:8000/api/detection/files/rsod-original/{original_filename}"
+            image_url = f"http://localhost:8000/api/detection/files/neu-det-original/{original_filename}"
         else:
             image_url = ""
         
         if result_filename:
-            result_url = f"http://localhost:8000/api/detection/files/rsod-results/{result_filename}"
+            result_url = f"http://localhost:8000/api/detection/files/neu-det-results/{result_filename}"
         else:
             result_url = ""
 
@@ -1130,7 +1130,7 @@ async def get_detection_by_id(
             boxes=boxes,
             total_objects=record.total_objects or 0,
             detection_time=record.detection_time or 0,
-            model_name=record.model_name or "rsod-yolo11n",
+            model_name=record.model_name or "neu-det-yolo11n",
             created_at=record.created_at
         )
 

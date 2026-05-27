@@ -55,21 +55,19 @@ logs/
 *.weights
 *.ckpt
 
-# YOLO 训练输出目录
+# YOLO 训练
+train.py
+convert.py
 runs/
-yolo_dataset/
+datasets/
 
 # ==================================
 # 数据文件（不应提交）
 # ==================================
 # 训练好的模型（保留目录结构）
-backend/models/rsod_yolo11n/
+backend/models/neu_model.pt
 !backend/models/.gitkeep
 backend/models/yolo11n.pt
-
-# 原始数据集
-backend/data/
-!backend/data/.gitkeep
 
 # 静态文件目录（上传图片、检测结果）
 backend/static/uploads/
