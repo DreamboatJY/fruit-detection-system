@@ -95,13 +95,14 @@ const handleCommand = (command) => {
 
 .breadcrumb-separator {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   margin: 0 8px;
 }
 
 .breadcrumb-text {
   font-size: 14px;
   color: var(--text-primary);
+  font-weight: 500;
 }
 
 .header-actions {
@@ -111,9 +112,10 @@ const handleCommand = (command) => {
 
 .status-tag {
   margin-right: 24px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-size: 13px;
+  font-weight: 500;
 }
 
 .action-icons {
@@ -126,28 +128,30 @@ const handleCommand = (command) => {
   color: var(--text-secondary);
   margin-right: 20px;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .action-icon:hover {
   color: var(--primary-color);
+  transform: scale(1.1);
 }
 
 .user-dropdown {
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
 }
 
 .user-dropdown:hover {
-  background-color: #f3f4f6;
+  background-color: var(--bg-tertiary);
 }
 
 .user-avatar {
   margin-right: 8px;
+  border: 2px solid var(--border-color);
 }
 
 .user-info {
@@ -168,6 +172,6 @@ const handleCommand = (command) => {
 
 .dropdown-icon {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 </style>

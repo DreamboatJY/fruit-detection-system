@@ -26,11 +26,12 @@
 }
 
 .sidebar {
-  width: 200px;
-  background-color: #ffffff;
+  width: 220px;
+  background-color: var(--bg-primary);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
 }
 
 .main-container {
@@ -42,18 +43,19 @@
 
 .header {
   height: 64px;
-  background-color: #ffffff;
+  background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 28px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
 }
 
 .content {
   flex: 1;
-  padding: 24px 32px;
+  padding: 28px 32px;
   overflow-y: auto;
-  background-color: #f0f7f2;
+  background-color: var(--bg-secondary);
 }
 </style>

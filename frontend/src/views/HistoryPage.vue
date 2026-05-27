@@ -524,234 +524,244 @@ const handlePageChange = (page) => {
 };
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .history-page {
   width: 100%;
+  animation: fadeIn 0.3s ease-out;
+}
 
-  .page-header {
-    margin-bottom: 24px;
+.page-header {
+  margin-bottom: 24px;
+}
 
-    .page-title {
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
 
-    .page-subtitle {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-  }
+.page-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
 
-  .search-bar {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
-    align-items: center;
+.search-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
 
-    .search-input {
-      flex: 1;
-      max-width: 300px;
-    }
+.search-input {
+  flex: 1;
+  max-width: 300px;
+}
 
-    .filter-select {
-      width: 140px;
-    }
-  }
+.filter-select {
+  width: 140px;
+}
 
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  .history-card {
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: var(--card-shadow);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
+.history-card {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border-light);
+}
 
-    &:hover {
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-      transform: translateY(-2px);
-    }
+.history-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
 
-    .record-preview {
-      position: relative;
-      width: 120px;
-      height: 80px;
-      border-radius: 8px;
-      overflow: hidden;
+.record-preview {
+  position: relative;
+  width: 120px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
 
-      .preview-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-      .status-badge {
-        position: absolute;
-        bottom: 8px;
-        left: 8px;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        gap: 4px;
+.status-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(4px);
+}
 
-        &.completed {
-          background-color: rgba(34, 197, 94, 0.9);
-          color: white;
-        }
+.status-badge.completed {
+  background-color: rgba(16, 185, 129, 0.9);
+  color: white;
+}
 
-        &.processing {
-          background-color: rgba(59, 130, 246, 0.9);
-          color: white;
-        }
+.status-badge.processing {
+  background-color: rgba(59, 130, 246, 0.9);
+  color: white;
+}
 
-        &.failed {
-          background-color: rgba(239, 68, 68, 0.9);
-          color: white;
-        }
-      }
-    }
+.status-badge.failed {
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+}
 
-    .record-info {
-      flex: 1;
-      min-width: 0;
+.record-info {
+  flex: 1;
+  min-width: 0;
+}
 
-      .record-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
+.record-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
 
-        .record-filename {
-          font-size: 15px;
-          font-weight: 500;
-          color: var(--text-primary);
-        }
+.record-filename {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
 
-        .record-type {
-          padding: 3px 8px;
-          background-color: #f3f4f6;
-          border-radius: 4px;
-          font-size: 12px;
-          color: var(--text-secondary);
-        }
-      }
+.record-type {
+  padding: 3px 10px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
 
-      .record-meta {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 10px;
+.record-meta {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+}
 
-        .meta-item {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 13px;
-          color: var(--text-secondary);
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
 
-          :deep(.el-icon) {
-            font-size: 14px;
-          }
-        }
-      }
+.record-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 
-      .record-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
+.detected-tag {
+  padding: 3px 10px;
+  background-color: var(--success-light);
+  color: var(--success-color);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+}
 
-        .detected-tag {
-          padding: 3px 8px;
-          background-color: rgba(39, 174, 96, 0.1);
-          color: #27ae60;
-          border-radius: 4px;
-          font-size: 12px;
-        }
-      }
-    }
+.record-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
 
-    .record-actions {
-      display: flex;
-      gap: 8px;
-    }
-  }
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+}
 
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 0;
+.empty-icon {
+  color: var(--text-tertiary);
+  margin-bottom: 16px;
+}
 
-    .empty-icon {
-      color: #9ca3af;
-      margin-bottom: 16px;
-    }
+.empty-text {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
 
-    .empty-text {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-    }
-  }
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
 
-  .pagination-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 32px;
-  }
+.batch-download-dialog :deep(.el-dialog__body) {
+  padding: 20px;
+}
 
-  :deep(.batch-download-dialog) {
-    .batch-download-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
+.batch-download-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
 
-    .batch-download-list {
-      max-height: 360px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+.batch-download-list {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-    .batch-download-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 12px;
-      background-color: #f9fafb;
-      border: 1px solid #eef0f3;
-      border-radius: 8px;
+.batch-download-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
 
-      &.disabled {
-        opacity: 0.55;
-      }
-    }
+.batch-download-item.disabled {
+  opacity: 0.55;
+}
 
-    .batch-download-name {
-      display: inline-block;
-      max-width: 460px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      vertical-align: middle;
-    }
-  }
+.batch-download-name {
+  display: inline-block;
+  max-width: 460px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-size: 13px;
+  font-weight: 500;
 }
 </style>

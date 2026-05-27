@@ -30,15 +30,6 @@
         :data-key="tab.key"
         @click="handleTabClick(tab.key)"
       >
-        <input
-          v-if="tab.key !== 'batch' && tab.key !== 'camera' && tab.key !== 'video'"
-          type="file"
-          :accept="tab.accept"
-          :multiple="tab.multiple"
-          class="file-input"
-          @change="handleFileChange($event, tab.key)"
-          ref="fileInputs"
-        />
         <el-icon :size="18" class="tab-icon"
           ><component :is="tab.icon"
         /></el-icon>
@@ -135,6 +126,14 @@
         <!-- 图片对比区域 -->
         <div v-else class="image-compare">
           <div class="image-card">
+            <input
+              v-if="activeTab === 'single'"
+              type="file"
+              accept="image/*"
+              class="single-file-input"
+              @change="handleFileChange($event, 'single')"
+              ref="singleFileInputRef"
+            />
             <template v-if="hasImage && originalImage">
               <img :src="originalImage" alt="原始图片" class="compare-image" />
             </template>
@@ -483,7 +482,7 @@ const functionTabs = [
   },
 ];
 
-const fileInputs = ref([]);
+const singleFileInputRef = ref(null);
 const batchFileInputRef = ref(null);
 
 const handleTabClick = (key) => {
@@ -515,8 +514,6 @@ const handleTabClick = (key) => {
     resultImage.value = null;
     hasImage.value = false;
   }
-  // 批量检测：仅切换选项卡，不自动弹出文件选择器，让用户在界面中自主点击上传
-  // 单图/摄像头/视频检测：input 已覆盖整个选项卡，原生点击自动弹出文件选择器
 };
 
 const handleCameraResult = (result) => {
@@ -828,12 +825,11 @@ const handleRedetect = () => {
     videoDetectionRef.value?.stopDetection();
     return;
   }
-  const input = document.querySelector(
-    `.function-tab[data-key="single"] .file-input`,
-  );
-  if (input) {
-    input.click();
-  }
+  // 单图检测：重置为初始状态
+  detectionResult.value = null;
+  originalImage.value = null;
+  resultImage.value = null;
+  hasImage.value = false;
 };
 
 onBeforeUnmount(() => {
@@ -858,6 +854,7 @@ watch(
 .detection-page {
   width: 100%;
   position: relative;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .page-header {
@@ -873,17 +870,20 @@ watch(
 
 .separator {
   margin: 0 6px;
+  color: var(--text-tertiary);
 }
 
 .active {
   color: var(--text-primary);
+  font-weight: 500;
 }
 
 .page-title {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 8px;
+  letter-spacing: -0.02em;
 }
 
 .page-subtitle {
@@ -910,16 +910,17 @@ watch(
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   border: 2px solid transparent;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--card-shadow);
 }
 
-.file-input {
+.single-file-input {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -930,11 +931,14 @@ watch(
 
 .function-tab:hover {
   background-color: var(--primary-light);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
 }
 
 .function-tab.active {
-  background-color: var(--primary-light);
+  background: linear-gradient(135deg, var(--primary-light) 0%, rgba(59, 130, 246, 0.06) 100%);
   border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
 
 /* 批量检测上传区域 */
@@ -948,11 +952,11 @@ watch(
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
-  background-color: #ffffff;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
+  background-color: var(--bg-primary);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   position: relative;
   overflow: hidden;
 }
@@ -973,7 +977,7 @@ watch(
 
 .batch-upload-icon {
   font-size: 48px;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
@@ -1000,10 +1004,11 @@ watch(
 }
 
 .upload-panel {
-  background-color: #ffffff;
-  border-radius: 8px;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
   padding: 16px;
   margin-bottom: 24px;
+  box-shadow: var(--card-shadow);
 }
 
 .upload-panel-header {
@@ -1012,6 +1017,12 @@ watch(
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 12px;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .upload-count {
@@ -1037,8 +1048,8 @@ watch(
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  background-color: #f9fafb;
-  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
 }
 
 .upload-file-name {
@@ -1087,9 +1098,10 @@ watch(
 
 .left-panel {
   flex: 1;
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
   padding: 20px;
+  box-shadow: var(--card-shadow);
 }
 
 .panel-header {
@@ -1097,12 +1109,6 @@ watch(
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
-}
-
-.panel-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
 }
 
 .result-tag {
@@ -1121,9 +1127,9 @@ watch(
 .image-card {
   flex: 1;
   position: relative;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background-color: #f9fafb;
+  background-color: var(--bg-tertiary);
 }
 
 .image-placeholder {
@@ -1139,20 +1145,20 @@ watch(
 
 .placeholder-icon {
   font-size: 48px;
-  color: #d1d5db;
+  color: var(--border-color);
   margin-bottom: 12px;
 }
 
 .placeholder-text {
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 4px;
 }
 
 .placeholder-desc {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-tertiary);
 }
 
 .compare-image {
@@ -1167,9 +1173,11 @@ watch(
   left: 0;
   right: 0;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   color: #ffffff;
   font-size: 13px;
+  font-weight: 500;
 }
 
 .detection-mark {
@@ -1179,10 +1187,11 @@ watch(
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: var(--primary-color);
+  background-color: var(--success-color);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .detection-mark::after {
@@ -1201,16 +1210,17 @@ watch(
 }
 
 .info-card {
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
   padding: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border-color);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .info-item:last-child {
@@ -1224,14 +1234,15 @@ watch(
 
 .info-value {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
 .result-card {
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
   padding: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 .card-header {
@@ -1292,10 +1303,15 @@ watch(
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background-color: #f9fafb;
-  border-radius: 6px;
+  padding: 10px 12px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
   margin-bottom: 8px;
+  transition: all var(--transition-fast);
+}
+
+.detection-item:hover {
+  background-color: var(--primary-light);
 }
 
 .detection-item:last-child {
@@ -1326,8 +1342,8 @@ watch(
   flex-direction: column;
   align-items: center;
   padding: 10px 6px;
-  background-color: #f9fafb;
-  border-radius: 8px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
 }
 
 .summary-item.success .summary-value {
@@ -1335,7 +1351,7 @@ watch(
 }
 
 .summary-item.danger .summary-value {
-  color: #ef4444;
+  color: var(--danger-color);
 }
 
 .summary-value {
@@ -1365,11 +1381,11 @@ watch(
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
-  background-color: #f9fafb;
+  background-color: var(--bg-tertiary);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .batch-item:hover,
@@ -1425,15 +1441,18 @@ watch(
 
 .btn-secondary {
   flex: 1;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 10px;
   font-size: 14px;
 }
 
 .btn-primary {
   flex: 2;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 10px;
   font-size: 14px;
+  background: var(--primary-gradient);
+  border: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 </style>

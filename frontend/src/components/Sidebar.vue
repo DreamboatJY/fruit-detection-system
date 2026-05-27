@@ -86,20 +86,22 @@ const handleMenuClick = (item) => {
   height: 72px;
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
 }
 
 .logo-icon {
   width: 40px;
   height: 40px;
-  border-radius: 6px;
-  background-color: var(--primary-color);
+  border-radius: 10px;
+  background: var(--primary-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 10px;
+  margin-right: 12px;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .logo-text {
@@ -108,47 +110,70 @@ const handleMenuClick = (item) => {
 
 .logo-title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
   line-height: 1.3;
   white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 
 .logo-subtitle {
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 11px;
+  color: var(--text-tertiary);
   margin-top: 2px;
   line-height: 1.3;
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .nav-menu {
   flex: 1;
-  padding: 16px 12px;
+  padding: 20px 12px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   flex-direction: row;
-  padding: 16px 12px;
-  border-radius: 8px;
-  margin-bottom: 8px;
+  padding: 14px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   text-align: left;
-  border-left: 3px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary-gradient);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
 }
 
 .nav-item:hover {
   background-color: var(--primary-light);
 }
 
+.nav-item:hover::before {
+  opacity: 0.5;
+}
+
 .nav-item.active {
-  background-color: var(--primary-light);
-  border-left: 3px solid var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-light) 0%, rgba(59, 130, 246, 0.08) 100%);
   color: var(--primary-color);
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.nav-item.active::before {
+  opacity: 1;
 }
 
 .nav-item.active .nav-icon {
@@ -160,10 +185,16 @@ const handleMenuClick = (item) => {
   margin-right: 12px;
   color: var(--text-secondary);
   flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.nav-item:hover .nav-icon {
+  color: var(--primary-color);
 }
 
 .nav-text {
   font-size: 14px;
   line-height: 1.4;
+  transition: color var(--transition-fast);
 }
 </style>

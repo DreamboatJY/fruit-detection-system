@@ -1,9 +1,15 @@
 <template>
   <div class="login-container">
+    <div class="login-background">
+      <div class="bg-shape bg-shape-1"></div>
+      <div class="bg-shape bg-shape-2"></div>
+      <div class="bg-shape bg-shape-3"></div>
+    </div>
+
     <div class="login-card">
       <div class="login-header">
         <div class="logo-icon">
-          <el-icon :size="40" color="#27ae60"><Picture /></el-icon>
+          <el-icon :size="36" color="#ffffff"><Picture /></el-icon>
         </div>
         <h1 class="login-title">钢材表面缺陷智能检测平台</h1>
         <p class="login-subtitle">NEU-DET 数据集 · 六类缺陷精准识别</p>
@@ -33,6 +39,7 @@
             type="password"
             placeholder="请输入密码"
             size="large"
+            show-password
           >
             <template #prefix>
               <el-icon><Lock /></el-icon>
@@ -53,7 +60,7 @@
             :loading="isSubmitting"
             @click="handleLogin"
           >
-            登录
+            登 录
           </el-button>
         </el-form-item>
       </el-form>
@@ -122,48 +129,118 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+}
+
+.bg-shape-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  top: -150px;
+  right: -100px;
+  animation: float 8s ease-in-out infinite;
+}
+
+.bg-shape-2 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #10b981, #3b82f6);
+  bottom: -100px;
+  left: -80px;
+  animation: float 10s ease-in-out infinite reverse;
+}
+
+.bg-shape-3 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: float 12s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
 }
 
 .login-card {
   width: 100%;
-  max-width: 400px;
-  padding: 40px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 420px;
+  padding: 48px 40px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.5s ease-out;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
 }
 
 .logo-icon {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 16px;
-  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-  border-radius: 12px;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  background: var(--primary-gradient);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
 }
 
 .login-title {
   font-size: 22px;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 6px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
 }
 
 .login-subtitle {
   font-size: 13px;
-  color: #6b7280;
+  color: #64748b;
+  letter-spacing: 0.02em;
 }
 
 .login-form {
   margin-bottom: 24px;
+}
+
+.login-form :deep(.el-input__wrapper) {
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow: 0 0 0 1px #e2e8f0;
+  transition: all var(--transition-fast);
+}
+
+.login-form :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #cbd5e1;
+}
+
+.login-form :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px var(--primary-color);
 }
 
 .form-actions {
@@ -173,37 +250,68 @@ const handleLogin = async () => {
   margin-bottom: 16px;
 }
 
+.form-actions :deep(.el-checkbox__label) {
+  font-size: 13px;
+  color: #64748b;
+}
+
 .forgot-password {
   font-size: 13px;
-  color: #27ae60;
+  color: var(--primary-color);
   cursor: pointer;
+  transition: color var(--transition-fast);
 }
 
 .forgot-password:hover {
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 
 .login-btn {
   width: 100%;
-  height: 44px;
-  border-radius: 8px;
+  height: 48px;
+  border-radius: var(--radius-md);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  background: var(--primary-gradient);
+  border: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: all var(--transition-fast);
+}
+
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 }
 
 .register-link {
   text-align: center;
   font-size: 13px;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .register-link a {
-  color: #27ae60;
+  color: var(--primary-color);
   margin-left: 4px;
   cursor: pointer;
+  font-weight: 500;
+  transition: color var(--transition-fast);
 }
 
 .register-link a:hover {
+  color: var(--primary-dark);
   text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    margin: 16px;
+    padding: 36px 24px;
+  }
+
+  .login-title {
+    font-size: 20px;
+  }
 }
 </style>
