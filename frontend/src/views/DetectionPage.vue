@@ -116,26 +116,6 @@
           </el-tag>
         </div>
 
-        <!-- 工具栏 -->
-        <div class="toolbar">
-          <el-button
-            :class="{ active: compareMode === 'side' }"
-            size="small"
-            @click="compareMode = 'side'"
-          >
-            <el-icon><Minus /></el-icon>
-            并排对比
-          </el-button>
-          <el-button
-            :class="{ active: compareMode === 'grid' }"
-            size="small"
-            @click="compareMode = 'grid'"
-          >
-            <el-icon><Grid /></el-icon>
-            栅格对比
-          </el-button>
-        </div>
-
         <!-- 图片对比区域 -->
         <div class="image-compare">
           <div class="image-card">
@@ -277,7 +257,7 @@
               <div class="batch-item-main">
                 <span class="batch-filename">{{ item.filename }}</span>
                 <span class="batch-meta" v-if="item.result">
-                  {{ item.result.total_objects }} 个目标 · {{ item.result.detection_time }}s
+                  {{ item.result.total_objects }} 个目标 · {{ formatDetectionTime(item.result.detection_time) }}s
                 </span>
                 <span class="batch-meta" v-else>{{ item.error || item.message }}</span>
               </div>
@@ -299,7 +279,7 @@
             <p v-else-if="!detectionResult">未检测到指定目标</p>
             <p v-else>
               检测到 {{ detectionResult.total_objects }} 个目标，耗时
-              {{ detectionResult.detection_time }}s。 模型:
+              {{ formatDetectionTime(detectionResult.detection_time) }}s。 模型:
               {{ detectionResult.model_name }}
             </p>
           </div>
@@ -325,7 +305,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
 import {
@@ -339,7 +319,6 @@ import {
   CircleCheck,
   ChatDotRound,
   Refresh,
-  Minus,
   Upload,
   View,
   Delete,
@@ -352,13 +331,13 @@ import {
   exportBatch,
   getBatchItems,
   getBatchStatus,
+  getDetectionDetail,
   retryFailedBatch,
 } from "../api/detection";
 
 const selectedModel = ref("rsod-yolo11n");
 const route = useRoute();
 const activeTab = ref("single");
-const compareMode = ref("side");
 const originalImage = ref(null);
 const resultImage = ref(null);
 const detectionResult = ref(null);
@@ -599,6 +578,57 @@ const selectBatchItem = (item) => {
   }
 };
 
+const loadDetectionDetail = async (detectionId) => {
+  if (!detectionId) return;
+
+  stopBatchPolling();
+  activeTab.value = "single";
+  isDetecting.value = true;
+  batchResult.value = null;
+  selectedBatchId.value = null;
+  detectionResult.value = null;
+  originalImage.value = null;
+  resultImage.value = null;
+  hasImage.value = false;
+
+  try {
+    const response = await getDetectionDetail(detectionId);
+    if (response.success && response.data) {
+      detectionResult.value = response.data;
+      originalImage.value = response.data.image_url;
+      resultImage.value = response.data.result_image_url;
+      selectedModel.value = response.data.model_name || selectedModel.value;
+      hasImage.value = Boolean(response.data.image_url || response.data.result_image_url);
+    } else {
+      ElMessage.error(response.message || "获取检测详情失败");
+    }
+  } catch (error) {
+    console.error("获取检测详情失败:", error);
+  } finally {
+    isDetecting.value = false;
+  }
+};
+
+const loadRouteResult = () => {
+  const batchId = route.query.batch_id;
+  const detectionId = route.query.detection_id;
+
+  if (batchId) {
+    activeTab.value = "batch";
+    hasImage.value = true;
+    isDetecting.value = true;
+    detectionResult.value = null;
+    originalImage.value = null;
+    resultImage.value = null;
+    startBatchPolling(batchId);
+    return;
+  }
+
+  if (detectionId) {
+    loadDetectionDetail(detectionId);
+  }
+};
+
 const getBatchStatusText = (status) => {
   const texts = {
     pending: "待处理",
@@ -652,6 +682,11 @@ const formatFileSize = (size) => {
   return `${(size / 1024 / 1024).toFixed(1)} MB`;
 };
 
+const formatDetectionTime = (time) => {
+  const value = Number(time);
+  return Number.isFinite(value) ? value.toFixed(3) : "0.000";
+};
+
 const handleRedetect = () => {
   if (activeTab.value === "batch") {
     triggerBatchFileInput();
@@ -670,14 +705,15 @@ onBeforeUnmount(() => {
 });
 
 onMounted(() => {
-  const batchId = route.query.batch_id;
-  if (batchId) {
-    activeTab.value = "batch";
-    hasImage.value = true;
-    isDetecting.value = true;
-    startBatchPolling(batchId);
-  }
+  loadRouteResult();
 });
+
+watch(
+  () => [route.query.batch_id, route.query.detection_id],
+  () => {
+    loadRouteResult();
+  },
+);
 </script>
 
 <style scoped>
@@ -935,23 +971,6 @@ onMounted(() => {
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 13px;
-}
-
-.toolbar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.toolbar .el-button {
-  border-radius: 6px;
-  padding: 6px 14px;
-}
-
-.toolbar .el-button.active {
-  background-color: var(--primary-light);
-  color: var(--primary-color);
-  border-color: var(--primary-color);
 }
 
 /* 图片对比区域 */

@@ -103,10 +103,42 @@
             <el-icon><Monitor/></el-icon>
             查看
           </el-button>
-          <el-button size="small" @click.stop="downloadRecord(record)">
-            <el-icon><Download/></el-icon>
-            下载
-          </el-button>
+          <el-dropdown
+            trigger="click"
+            @command="downloadRecord"
+            @click.stop
+          >
+            <el-button size="small" @click.stop>
+              <el-icon><Download/></el-icon>
+              下载
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <template v-if="record.type === 'batch'">
+                  <el-dropdown-item :command="{ record, action: 'batch-select' }">
+                    选择图片下载
+                  </el-dropdown-item>
+                  <el-dropdown-item :command="{ record, action: 'batch-zip' }">
+                    下载全部压缩包
+                  </el-dropdown-item>
+                </template>
+                <template v-else>
+                  <el-dropdown-item
+                    :command="{ record, type: 'original' }"
+                    :disabled="!record.image_url"
+                  >
+                    下载原图
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    :command="{ record, type: 'result' }"
+                    :disabled="!record.result_image_url"
+                  >
+                    下载检测结果图
+                  </el-dropdown-item>
+                </template>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <el-button
             size="small"
             type="danger"
@@ -140,11 +172,62 @@
         layout="prev, pager, next"
       />
     </div>
+
+    <el-dialog
+      v-model="batchDownloadVisible"
+      title="选择批量任务图片"
+      width="680px"
+      class="batch-download-dialog"
+    >
+      <div class="batch-download-toolbar">
+        <el-radio-group v-model="batchDownloadType" size="small">
+          <el-radio-button label="result">检测结果图</el-radio-button>
+          <el-radio-button label="original">原图</el-radio-button>
+          <el-radio-button label="both">原图和结果图</el-radio-button>
+        </el-radio-group>
+        <el-button size="small" @click="selectAllBatchDownloads">全选可下载</el-button>
+      </div>
+
+      <el-skeleton v-if="batchDownloadLoading" :rows="5" animated />
+      <el-checkbox-group
+        v-else
+        v-model="selectedBatchDownloadIds"
+        class="batch-download-list"
+      >
+        <div
+          v-for="item in batchDownloadItems"
+          :key="getBatchItemId(item)"
+          class="batch-download-item"
+          :class="{ disabled: !canDownloadBatchItem(item) }"
+        >
+          <el-checkbox
+            :label="getBatchItemId(item)"
+            :disabled="!canDownloadBatchItem(item)"
+          >
+            <span class="batch-download-name">{{ item.filename }}</span>
+          </el-checkbox>
+          <el-tag size="small" :type="item.status === 'completed' ? 'success' : 'info'">
+            {{ getStatusText(item.status) }}
+          </el-tag>
+        </div>
+      </el-checkbox-group>
+
+      <template #footer>
+        <el-button @click="batchDownloadVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          :disabled="selectedBatchDownloadIds.length === 0"
+          @click="downloadSelectedBatchImages"
+        >
+          下载选中图片
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import {
   Search,
@@ -161,7 +244,12 @@ import {
   CircleClose,
 } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { getDetectionHistory, deleteDetection } from "../api/detection";
+import {
+  deleteDetection,
+  exportBatch,
+  getBatchItems,
+  getDetectionHistory,
+} from "../api/detection";
 
 const router = useRouter();
 
@@ -174,6 +262,12 @@ const isLoading = ref(false);
 
 const historyRecords = ref([]);
 const totalRecords = ref(0);
+const batchDownloadVisible = ref(false);
+const batchDownloadLoading = ref(false);
+const batchDownloadItems = ref([]);
+const selectedBatchDownloadIds = ref([]);
+const selectedBatchRecord = ref(null);
+const batchDownloadType = ref("result");
 
 const fetchHistory = async () => {
   isLoading.value = true;
@@ -210,6 +304,13 @@ const filteredRecords = computed(() => {
   });
 });
 
+watch(batchDownloadType, () => {
+  const selectedIds = new Set(selectedBatchDownloadIds.value);
+  selectedBatchDownloadIds.value = batchDownloadItems.value
+    .filter((item) => selectedIds.has(getBatchItemId(item)) && canDownloadBatchItem(item))
+    .map(getBatchItemId);
+});
+
 const getStatusIcon = (status) => {
   const icons = {
     completed: CircleCheck,
@@ -243,11 +344,149 @@ const viewRecord = (record) => {
     router.push({ path: "/detection", query: { batch_id: record.id } });
     return;
   }
-  router.push("/detection");
+  router.push({ path: "/detection", query: { detection_id: record.id } });
 };
 
-const downloadRecord = (record) => {
-  console.log("下载记录:", record);
+const getDownloadFilename = (record, type, url, filename) => {
+  const prefix = type === "original" ? "original" : "result";
+  const fallbackName = `${prefix}_${filename || record.filename || record.id || "image"}.jpg`;
+
+  try {
+    const pathname = new URL(url).pathname;
+    const urlFilename = decodeURIComponent(pathname.split("/").pop() || fallbackName);
+    return type === "original" ? urlFilename : `${prefix}_${urlFilename}`;
+  } catch {
+    return fallbackName;
+  }
+};
+
+const triggerBlobDownload = (blob, filename) => {
+  const objectUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(objectUrl);
+};
+
+const downloadUrl = async (url, filename) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  triggerBlobDownload(blob, filename);
+};
+
+const getBatchItemId = (item) => item.detection_id || item.filename;
+
+const getBatchItemUrls = (item) => ({
+  original: item.result?.image_url,
+  result: item.result?.result_image_url,
+});
+
+const canDownloadBatchItem = (item) => {
+  const urls = getBatchItemUrls(item);
+  if (batchDownloadType.value === "both") {
+    return Boolean(urls.original || urls.result);
+  }
+  return Boolean(urls[batchDownloadType.value]);
+};
+
+const selectAllBatchDownloads = () => {
+  selectedBatchDownloadIds.value = batchDownloadItems.value
+    .filter(canDownloadBatchItem)
+    .map(getBatchItemId);
+};
+
+const openBatchDownloadDialog = async (record) => {
+  selectedBatchRecord.value = record;
+  batchDownloadVisible.value = true;
+  batchDownloadLoading.value = true;
+  batchDownloadItems.value = [];
+  selectedBatchDownloadIds.value = [];
+  batchDownloadType.value = "result";
+
+  try {
+    const response = await getBatchItems(record.id);
+    batchDownloadItems.value = response.data?.items || [];
+    selectAllBatchDownloads();
+  } catch (error) {
+    console.error("获取批量任务图片失败:", error);
+    ElMessage.error("获取批量任务图片失败");
+  } finally {
+    batchDownloadLoading.value = false;
+  }
+};
+
+const downloadBatchZip = async (record) => {
+  try {
+    const blob = await exportBatch(record.id, "zip");
+    triggerBlobDownload(blob, `batch_${record.id}.zip`);
+  } catch (error) {
+    console.error("下载批量压缩包失败:", error);
+    ElMessage.error("下载失败，请稍后重试");
+  }
+};
+
+const downloadSelectedBatchImages = async () => {
+  const record = selectedBatchRecord.value;
+  if (!record) return;
+
+  const selectedIds = new Set(selectedBatchDownloadIds.value);
+  const selectedItems = batchDownloadItems.value.filter((item) =>
+    selectedIds.has(getBatchItemId(item)),
+  );
+
+  try {
+    for (const item of selectedItems) {
+      const urls = getBatchItemUrls(item);
+      const downloads = batchDownloadType.value === "both"
+        ? ["original", "result"]
+        : [batchDownloadType.value];
+
+      for (const type of downloads) {
+        if (!urls[type]) continue;
+        await downloadUrl(
+          urls[type],
+          getDownloadFilename(record, type, urls[type], item.filename),
+        );
+      }
+    }
+    ElMessage.success("已开始下载选中图片");
+    batchDownloadVisible.value = false;
+  } catch (error) {
+    console.error("下载批量图片失败:", error);
+    ElMessage.error("部分图片下载失败，请稍后重试");
+  }
+};
+
+const downloadRecord = async ({ record, type, action }) => {
+  if (action === "batch-select") {
+    await openBatchDownloadDialog(record);
+    return;
+  }
+
+  if (action === "batch-zip") {
+    await downloadBatchZip(record);
+    return;
+  }
+
+  const url = type === "original" ? record.image_url : record.result_image_url;
+  if (!url) {
+    ElMessage.warning(type === "original" ? "原图不存在" : "检测结果图不存在");
+    return;
+  }
+
+  try {
+    await downloadUrl(url, getDownloadFilename(record, type, url));
+  } catch (error) {
+    console.error("下载图片失败:", error);
+    ElMessage.error("下载失败，请稍后重试");
+  }
 };
 
 const deleteRecord = async (record) => {
@@ -471,6 +710,48 @@ const handlePageChange = (page) => {
     display: flex;
     justify-content: center;
     margin-top: 32px;
+  }
+
+  :deep(.batch-download-dialog) {
+    .batch-download-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .batch-download-list {
+      max-height: 360px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .batch-download-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      background-color: #f9fafb;
+      border: 1px solid #eef0f3;
+      border-radius: 8px;
+
+      &.disabled {
+        opacity: 0.55;
+      }
+    }
+
+    .batch-download-name {
+      display: inline-block;
+      max-width: 460px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
   }
 }
 </style>
